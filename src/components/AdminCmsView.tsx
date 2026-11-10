@@ -629,69 +629,70 @@ export const AdminCmsView: React.FC<{
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F6F0] text-[#0B162C] flex flex-col">
-      {/* Top Dual-System Switcher Bar */}
-      <div className="bg-[#071120] text-white border-b-2 border-[#C6A15B] px-4 md:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#F8F6F0] text-[#0B162C] flex flex-col pb-16 lg:pb-0">
+      {/* Top Dual-System Switcher Bar — Compact on Mobile */}
+      <div className="sticky top-0 z-40 bg-[#071120] text-white border-b-2 border-[#C6A15B] px-3 sm:px-6 md:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 shadow-md no-print">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={onBackToHome}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-[#C6A15B] text-[#FDE68A] hover:text-[#0B162C] font-extrabold text-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-[#C6A15B] text-[#FDE68A] hover:text-[#0B162C] font-extrabold text-xs sm:text-sm transition-colors shrink-0 cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" />
-            পাবলিক ওয়েবসাইটে ফিরুন
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">পাবলিক ওয়েবসাইটে ফিরুন</span>
+            <span className="sm:hidden">হোমপেজ</span>
           </button>
-          <div>
-            <span className="text-xs font-bold text-[#34D399] block">
-              H &amp; H Homes · প্রধান কার্যালয়: রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold text-[#34D399] block truncate">
+              H &amp; H Homes · রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা
             </span>
-            <h1 className="text-lg md:text-xl font-extrabold text-white">
+            <h1 className="text-sm sm:text-lg md:text-xl font-extrabold text-white truncate">
               {systemMode === 'realestate_erp'
-                ? 'প্যানেল ১: রিয়েল এস্টেট ইআরপি, মানি রিসিট ও একাউন্টিং'
+                ? 'প্যানেল ১: ইআরপি, মানি রিসিট ও একাউন্টিং'
                 : 'প্যানেল ২: পাবলিক ওয়েবসাইট কন্ট্রোল ও সিএমএস'}
             </h1>
           </div>
         </div>
 
         {/* Switch Between the 2 Admin Panels */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#101C32] p-1.5 rounded-2xl border border-[#C6A15B]/40">
+        <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2 bg-[#101C32] p-1 sm:p-1.5 rounded-2xl border border-[#C6A15B]/40 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setSystemMode('realestate_erp')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-sm transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all cursor-pointer ${
               systemMode === 'realestate_erp'
                 ? 'bg-[#059669] text-white shadow-lg'
                 : 'text-white/75 hover:text-white'
             }`}
           >
-            <Database className="w-4 h-4" />
-            ১. ইআরপি, মানি রিসিট ও হিসাব
+            <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">১. ইআরপি ও রিসিট</span>
           </button>
           <button
             type="button"
             onClick={() => setSystemMode('website_cms')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-sm transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all cursor-pointer ${
               systemMode === 'website_cms'
                 ? 'bg-[#C6A15B] text-[#0B162C] shadow-lg'
                 : 'text-white/75 hover:text-white'
             }`}
           >
-            <Globe className="w-4 h-4" />
-            ২. পাবলিক ওয়েবসাইট কন্ট্রোল
+            <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">২. ওয়েবসাইট কন্ট্রোল</span>
           </button>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row">
-        {/* Sidebar Navigation */}
+        {/* Sidebar Navigation — Horizontal Swipeable Bar on Mobile (< lg), Vertical Sidebar on Desktop (lg+) */}
         <aside
-          className={`w-full lg:w-72 text-white shrink-0 border-r ${
+          className={`w-full lg:w-72 text-white shrink-0 border-b lg:border-b-0 lg:border-r no-print ${
             systemMode === 'realestate_erp'
               ? 'bg-[#062E26] border-emerald-500/30'
               : 'bg-[#0B162C] border-[#C6A15B]/30'
           }`}
         >
           {systemMode === 'realestate_erp' ? (
-            <nav className="p-3 space-y-1.5">
+            <nav className="p-2.5 lg:p-3 flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar">
               {(
                 [
                   { label: 'মানি রিসিট ও কিস্তি আদায়', icon: Receipt },
@@ -709,10 +710,10 @@ export const AdminCmsView: React.FC<{
                   <button
                     key={item.label}
                     onClick={() => setErpTab(item.label)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-extrabold transition-all text-left cursor-pointer ${
+                    className={`lg:w-full flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 lg:py-3 rounded-xl text-xs lg:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all text-left cursor-pointer ${
                       active
                         ? 'bg-[#10B981] text-[#042F2E] shadow-md'
-                        : 'text-white/85 hover:bg-white/10'
+                        : 'bg-white/5 lg:bg-transparent text-white/85 hover:bg-white/10'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -722,7 +723,7 @@ export const AdminCmsView: React.FC<{
               })}
             </nav>
           ) : (
-            <nav className="p-3 space-y-1.5">
+            <nav className="p-2.5 lg:p-3 flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar">
               {(
                 [
                   { label: 'ইআরপি ডাটা সিলেকশন', icon: Globe },
@@ -739,10 +740,10 @@ export const AdminCmsView: React.FC<{
                   <button
                     key={item.label}
                     onClick={() => setWebTab(item.label)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-extrabold transition-all text-left cursor-pointer ${
+                    className={`lg:w-full flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 lg:py-3 rounded-xl text-xs lg:text-sm font-extrabold whitespace-nowrap shrink-0 transition-all text-left cursor-pointer ${
                       active
                         ? 'bg-[#C6A15B] text-[#0B162C] shadow-md'
-                        : 'text-white/85 hover:bg-white/10'
+                        : 'bg-white/5 lg:bg-transparent text-white/85 hover:bg-white/10'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -755,9 +756,9 @@ export const AdminCmsView: React.FC<{
         </aside>
 
         {/* Main Workspace */}
-        <main className="flex-1 p-5 md:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <main className="flex-1 p-3.5 sm:p-5 md:p-8 max-w-7xl mx-auto w-full space-y-5 sm:space-y-6">
           {statusBanner && (
-            <div className="p-4 rounded-xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 font-extrabold text-sm flex items-center gap-2 shadow-sm">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-sm">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               {statusBanner}
             </div>
@@ -768,20 +769,20 @@ export const AdminCmsView: React.FC<{
               সিস্টেম ডাটাবেস লোড হচ্ছে...
             </div>
           ) : (
-            <div className="bg-white p-4 rounded-2xl border border-[#0B162C]/15 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#0B162C]/15 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 shrink-0" />
                 <span className="text-xs sm:text-sm font-extrabold text-[#0B162C]">
                   দ্রুত প্রকল্প ভিউ ({toBengaliDigits(projects.length)}টি প্রকল্প · {toBengaliDigits(properties.length)}টি প্রপার্টি):
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar max-w-full pb-0.5">
                 {projects.slice(0, 4).map((proj) => (
                   <button
                     key={proj.id}
                     type="button"
                     onClick={() => setAdminViewerTarget({ type: 'project', project: proj })}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#0B162C] text-[#0B162C] hover:text-[#FDE68A] text-xs font-extrabold transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#0B162C] text-[#0B162C] hover:text-[#FDE68A] text-xs font-extrabold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5 text-emerald-600" />
                     <span>{proj.nameBn}</span>
@@ -793,7 +794,7 @@ export const AdminCmsView: React.FC<{
                     setSystemMode('realestate_erp');
                     setErpTab('মাস্টার প্রজেক্ট এন্ট্রি');
                   }}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <List className="w-3.5 h-3.5" />
                   <span>সকল প্রকল্প তালিকা</span>
@@ -2346,12 +2347,133 @@ export const AdminCmsView: React.FC<{
                       </div>
                     ))}
                   </div>
+
+                  {/* Cloud Git Deployment & Build Command Reference Card */}
+                  <div className="bg-[#0B162C] text-white rounded-2xl p-6 border-2 border-[#C6A15B]/50 shadow-md space-y-4">
+                    <div className="flex items-center gap-2.5">
+                      <Terminal className="w-6 h-6 text-[#34D399]" />
+                      <div>
+                        <span className="text-xs font-bold text-[#FDE68A] uppercase">
+                          ক্লাউড গিট ডিপ্লয়মেন্ট গাইড (Cloud Git Deployment)
+                        </span>
+                        <h4 className="text-lg font-extrabold text-white">
+                          গিট (Git) থেকে ক্লাউডে বিল্ড ও রান কমান্ড
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                      <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
+                        <span className="text-emerald-300 font-bold block">1. Build Command</span>
+                        <code className="font-mono text-white font-bold block">
+                          npm install &amp;&amp; npm run build
+                        </code>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
+                        <span className="text-emerald-300 font-bold block">2. Start Command</span>
+                        <code className="font-mono text-white font-bold block">
+                          NODE_ENV=production npm start
+                        </code>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
+                        <span className="text-emerald-300 font-bold block">3. Static Output Dir</span>
+                        <code className="font-mono text-white font-bold block">dist</code>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
           )}
         </main>
       </div>
+
+      {/* Native Mobile Fixed Bottom Navigation Bar for Admin & ERP */}
+      <nav
+        aria-label="অ্যাডমিন প্যানেল মোবাইল নেভিগেশন"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_rgba(11,25,44,0.08)] pb-safe no-print"
+      >
+        <div className="grid grid-cols-5 items-center h-14 px-1">
+          <button
+            type="button"
+            onClick={() => {
+              setSystemMode('realestate_erp');
+              setErpTab('মানি রিসিট ও কিস্তি আদায়');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              systemMode === 'realestate_erp' && erpTab === 'মানি রিসিট ও কিস্তি আদায়'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B162C] font-semibold'
+            }`}
+          >
+            <Receipt className="w-5 h-5" />
+            <span className="text-[10px] leading-none">মানি রিসিট</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSystemMode('realestate_erp');
+              setErpTab('মাস্টার প্রজেক্ট এন্ট্রি');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              systemMode === 'realestate_erp' && erpTab === 'মাস্টার প্রজেক্ট এন্ট্রি'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B162C] font-semibold'
+            }`}
+          >
+            <Building2 className="w-5 h-5" />
+            <span className="text-[10px] leading-none">প্রকল্প</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSystemMode('realestate_erp');
+              setErpTab('মাস্টার প্রপার্টি ইনভেন্টরি');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              systemMode === 'realestate_erp' && erpTab === 'মাস্টার প্রপার্টি ইনভেন্টরি'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B162C] font-semibold'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] leading-none">প্রপার্টি</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSystemMode('realestate_erp');
+              setErpTab('হিসাবরক্ষণ ও লেজার');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              systemMode === 'realestate_erp' && erpTab === 'হিসাবরক্ষণ ও লেজার'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B162C] font-semibold'
+            }`}
+          >
+            <Calculator className="w-5 h-5" />
+            <span className="text-[10px] leading-none">লেজার</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSystemMode('website_cms');
+              setWebTab('ইআরপি ডাটা সিলেকশন');
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              systemMode === 'website_cms'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B162C] font-semibold'
+            }`}
+          >
+            <Globe className="w-5 h-5" />
+            <span className="text-[10px] leading-none">ওয়েবসাইট</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Official Printable & Downloadable Money Receipt Modal */}
       {activeReceipt && (
@@ -2360,6 +2482,16 @@ export const AdminCmsView: React.FC<{
           onClose={() => setActiveReceipt(null)}
         />
       )}
+
+      {/* Interactive Project & Property Detail Viewer Modal */}
+      <ProjectPropertyViewerModal
+        target={adminViewerTarget}
+        allProjects={projects}
+        allProperties={properties}
+        onSelectTarget={(next) => setAdminViewerTarget(next)}
+        onClose={() => setAdminViewerTarget(null)}
+        contextLabelBn="অ্যাডমিন ও ইআরপি · প্রকল্প ও প্রপার্টি ভিউ"
+      />
     </div>
   );
 };

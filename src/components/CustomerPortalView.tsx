@@ -289,63 +289,64 @@ export const CustomerPortalView: React.FC<{
   // IF NOT LOGGED IN: Render Real Customer Password Login & Sign-Up Screen
   if (!customerUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#071120] via-[#101C32] to-[#06392F] flex flex-col justify-between p-4 md:p-8 text-white">
-        <div className="max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 py-2">
+      <div className="min-h-screen bg-gradient-to-br from-[#071120] via-[#101C32] to-[#06392F] flex flex-col justify-between p-3 sm:p-6 md:p-8 text-white">
+        <div className="max-w-6xl w-full mx-auto flex items-center justify-between gap-2 py-1.5 sm:py-2">
           <HHLogo variant="light" />
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {onOpenAdminPanel && (
               <button
                 type="button"
                 onClick={onOpenAdminPanel}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/25 hover:bg-emerald-600 text-emerald-200 hover:text-white border border-emerald-400/40 font-bold text-sm transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-600/25 hover:bg-emerald-600 text-emerald-200 hover:text-white border border-emerald-400/40 font-bold text-xs sm:text-sm transition-colors cursor-pointer"
               >
-                <Database className="w-4 h-4" />
-                <span>অ্যাডমিন ও ইআরপি প্যানেল</span>
+                <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">অ্যাডমিন ও ইআরপি প্যানেল</span>
+                <span className="sm:hidden">ইআরপি</span>
               </button>
             )}
             <button
               onClick={onBackToHome}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#FDE68A] border border-[#C6A15B]/40 font-bold text-base transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#FDE68A] border border-[#C6A15B]/40 font-bold text-xs sm:text-base transition-colors cursor-pointer"
             >
-              <ArrowLeft className="w-5 h-5" />
-              হোমপেজে ফিরে যান
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>হোমপেজ</span>
             </button>
           </div>
         </div>
 
-        <div className="max-w-6xl w-full mx-auto my-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left 3D Visual & Portal Benefits */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#C6A15B]/20 border border-[#C6A15B]/50 text-[#FDE68A] text-base font-bold">
-              <ShieldCheck className="w-5 h-5 text-[#34D399]" />
+        <div className="max-w-6xl w-full mx-auto my-3 sm:my-8 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-center">
+          {/* Left 3D Visual & Portal Benefits (Second on Mobile so Login Card is Immediately Above the Fold) */}
+          <div className="lg:col-span-6 space-y-4 sm:space-y-6 order-2 lg:order-1">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-[#C6A15B]/20 border border-[#C6A15B]/50 text-[#FDE68A] text-xs sm:text-base font-bold">
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#34D399]" />
               নিরাপদ পাসওয়ার্ড ও সাইন আপ যুক্ত গ্রাহক পোর্টাল
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-tight text-white">
               H &amp; H Homes ডিজিটাল গ্রাহক অ্যাকাউন্টে স্বাগতম
             </h1>
-            <p className="text-lg text-white/85 leading-relaxed">
+            <p className="text-sm sm:text-lg text-white/85 leading-relaxed">
               আপনার মোবাইল নম্বর বা ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন করুন। নতুন গ্রাহক হলে মাত্র ১ মিনিটে সাইন আপ করে আপনার প্লট বা ফ্ল্যাটের বুকিং, কিস্তির বিবরণ, বকেয়া হিসাব এবং অফিশিয়াল মানি রিসিট দেখুন।
             </p>
-            <div className="rounded-2xl overflow-hidden border-2 border-[#C6A15B]/50 shadow-2xl h-64">
+            <div className="rounded-2xl overflow-hidden border-2 border-[#C6A15B]/50 shadow-2xl h-48 sm:h-64">
               <ArchitecturalRender
                 theme="hero_3d_twin_towers"
                 label="গ্রাহক ডিজিটাল ইআরপি ও ৩ডি প্রপার্টি ট্র্যাকার"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4 text-base">
-              <div className="p-4 rounded-xl bg-white/10 border border-white/15">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-base">
+              <div className="p-3 sm:p-4 rounded-xl bg-white/10 border border-white/15">
                 <p className="font-bold text-[#FDE68A]">তাৎক্ষণিক মানি রিসিট</p>
-                <p className="text-sm text-white/80 mt-1">প্রতিটি কিস্তি পরিশোধের সাথে সাথে প্রিন্টযোগ্য রিসিট</p>
+                <p className="text-xs sm:text-sm text-white/80 mt-1">প্রতিটি কিস্তি পরিশোধের সাথে সাথে প্রিন্টযোগ্য রিসিট</p>
               </div>
-              <div className="p-4 rounded-xl bg-white/10 border border-white/15">
+              <div className="p-3 sm:p-4 rounded-xl bg-white/10 border border-white/15">
                 <p className="font-bold text-[#34D399]">ডিজিটাল বরাদ্দপত্র</p>
-                <p className="text-sm text-white/80 mt-1">আপনার বুকিংকৃত জমি বা ফ্ল্যাটের সম্পূর্ণ চুক্তিপত্র</p>
+                <p className="text-xs sm:text-sm text-white/80 mt-1">আপনার বুকিংকৃত জমি বা ফ্ল্যাটের সম্পূর্ণ চুক্তিপত্র</p>
               </div>
             </div>
           </div>
 
-          {/* Right Password Login & Sign-Up Form Card */}
-          <div className="lg:col-span-6 bg-white text-[#0B162C] rounded-3xl shadow-2xl border-2 border-[#C6A15B] p-6 md:p-10">
+          {/* Right Password Login & Sign-Up Form Card (First on Mobile for Instant App Login) */}
+          <div className="lg:col-span-6 bg-white text-[#0B162C] rounded-3xl shadow-2xl border-2 border-[#C6A15B] p-4 sm:p-6 md:p-10 order-1 lg:order-2">
             {/* Mode Switch Tabs */}
             <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#F2F4F7] rounded-2xl mb-6">
               <button
@@ -608,9 +609,60 @@ export const CustomerPortalView: React.FC<{
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F6F0] text-[#101C32] flex flex-col lg:flex-row">
-      {/* Left Sidebar Navigation */}
-      <aside className="w-full lg:w-76 bg-[#0B162C] text-white shrink-0 border-r border-[#C6A15B]/30 no-print">
+    <div className="min-h-screen bg-[#F8F6F0] text-[#101C32] flex flex-col lg:flex-row pb-16 lg:pb-0">
+      {/* Mobile Sticky App Header + Horizontal Module Scroller (< lg) */}
+      <div className="lg:hidden sticky top-0 z-40 bg-[#0B162C] text-white border-b border-[#C6A15B]/30 shadow-md no-print">
+        <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <span className="text-[10px] text-[#FDE68A] font-bold uppercase tracking-wider block truncate">
+              H &amp; H Homes গ্রাহক অ্যাপ
+            </span>
+            <h2 className="text-base font-extrabold text-white truncate">{activeTab}</h2>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-[#172A45] text-[#FDE68A] font-bold cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              হোমপেজ
+            </button>
+            <button
+              onClick={onCustomerLogout}
+              aria-label="লগআউট"
+              className="p-1.5 rounded-lg bg-red-500/20 text-red-200 hover:bg-red-500 hover:text-white cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Single-Line Swipeable Module Bar on Mobile */}
+        <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2 bg-[#101C32] border-t border-white/10">
+          {PORTAL_MENU.map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.label;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => setActiveTab(item.label)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                  active
+                    ? 'bg-[#C6A15B] text-[#0B162C] shadow-xs'
+                    : 'bg-white/5 text-white/80 hover:text-white'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Desktop Left Sidebar Navigation (lg+) */}
+      <aside className="hidden lg:block w-76 bg-[#0B162C] text-white shrink-0 border-r border-[#C6A15B]/30 no-print">
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <div>
             <p className="text-xs text-[#FDE68A] font-bold tracking-wider uppercase">
@@ -627,7 +679,7 @@ export const CustomerPortalView: React.FC<{
           </button>
         </div>
 
-        <nav className="p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5">
+        <nav className="p-3 grid grid-cols-1 gap-1.5">
           {PORTAL_MENU.map((item) => {
             const Icon = item.icon;
             const active = activeTab === item.label;
@@ -663,27 +715,27 @@ export const CustomerPortalView: React.FC<{
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-5 md:p-8 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+      <main className="flex-1 p-3.5 sm:p-6 md:p-8 lg:p-10 max-w-7xl mx-auto w-full space-y-5 sm:space-y-8">
         {/* Top Welcome & Account Bar */}
-        <div className="bg-white rounded-2xl p-6 border border-[#101C32]/10 shadow-sm flex flex-wrap items-center justify-between gap-4 no-print">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 border border-[#101C32]/10 shadow-sm flex flex-wrap items-center justify-between gap-3 sm:gap-4 no-print">
           <div>
-            <span className="text-sm font-bold text-[#059669]">
+            <span className="text-xs sm:text-sm font-bold text-[#059669]">
               স্বাগতম, {customerUser.name} ({customerUser.phone || customerUser.email})
             </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#101C32] mt-0.5">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-[#101C32] mt-0.5">
               H &amp; H Homes গ্রাহক অ্যাকাউন্ট — {activeTab}
             </h1>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               onClick={onBrowseProperties}
-              className="px-5 py-3 rounded-xl bg-[#C6A15B] text-[#101C32] text-base font-extrabold hover:bg-[#b58f48] transition-colors cursor-pointer"
+              className="px-3.5 sm:px-5 py-2 sm:py-3 rounded-xl bg-[#C6A15B] text-[#101C32] text-xs sm:text-base font-extrabold hover:bg-[#b58f48] transition-colors cursor-pointer"
             >
               নতুন প্রপার্টি বুকিং করুন
             </button>
             <button
               onClick={onCustomerLogout}
-              className="px-4 py-3 rounded-xl border border-red-300 text-red-700 hover:bg-red-50 text-base font-bold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+              className="hidden sm:inline-flex px-4 py-3 rounded-xl border border-red-300 text-red-700 hover:bg-red-50 text-base font-bold transition-colors cursor-pointer items-center gap-1.5"
             >
               <LogOut className="w-4 h-4" />
               লগআউট
@@ -691,29 +743,29 @@ export const CustomerPortalView: React.FC<{
           </div>
         </div>
 
-        {/* 4 Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print">
-          <div className="bg-white p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
-            <p className="text-base text-[#101C32]/65 font-bold">মোট বুকিং</p>
-            <p className="text-3xl font-extrabold text-[#101C32] mt-2 tabular-nums-bn">
+        {/* 4 Summary Cards — Compact 2x2 App KPI Grid on Mobile */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 no-print">
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
+            <p className="text-xs sm:text-base text-[#101C32]/65 font-bold">মোট বুকিং</p>
+            <p className="text-lg sm:text-3xl font-extrabold text-[#101C32] mt-1 sm:mt-2 tabular-nums-bn">
               {toBengaliDigits(totalBookings)}টি প্রপার্টি
             </p>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
-            <p className="text-base text-[#101C32]/65 font-bold">মোট পরিশোধ</p>
-            <p className="text-3xl font-extrabold text-emerald-700 mt-2 tabular-nums-bn">
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
+            <p className="text-xs sm:text-base text-[#101C32]/65 font-bold">মোট পরিশোধ</p>
+            <p className="text-lg sm:text-3xl font-extrabold text-emerald-700 mt-1 sm:mt-2 tabular-nums-bn">
               {formatExactBdtBengali(totalPaid)}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
-            <p className="text-base text-[#101C32]/65 font-bold">মোট বকেয়া</p>
-            <p className="text-3xl font-extrabold text-amber-700 mt-2 tabular-nums-bn">
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#101C32]/10 shadow-sm">
+            <p className="text-xs sm:text-base text-[#101C32]/65 font-bold">মোট বকেয়া</p>
+            <p className="text-lg sm:text-3xl font-extrabold text-amber-700 mt-1 sm:mt-2 tabular-nums-bn">
               {formatExactBdtBengali(totalDue)}
             </p>
           </div>
-          <div className="bg-[#101C32] text-white p-6 rounded-2xl border border-[#C6A15B]/40 shadow-sm">
-            <p className="text-base text-[#FDE68A] font-bold">পরবর্তী কিস্তির তারিখ</p>
-            <p className="text-2xl font-extrabold text-white mt-2 tabular-nums-bn">
+          <div className="bg-[#101C32] text-white p-3.5 sm:p-6 rounded-2xl border border-[#C6A15B]/40 shadow-sm">
+            <p className="text-xs sm:text-base text-[#FDE68A] font-bold">পরবর্তী কিস্তির তারিখ</p>
+            <p className="text-base sm:text-2xl font-extrabold text-white mt-1 sm:mt-2 tabular-nums-bn">
               {toBengaliDigits(nextInstallmentDate)}
             </p>
           </div>
@@ -1414,6 +1466,79 @@ export const CustomerPortalView: React.FC<{
           actionButtonLabelBn="নতুন প্রপার্টি বুকিং করুন"
         />
       </main>
+
+      {/* Native Mobile Fixed Bottom Navigation Bar for Customer Portal */}
+      <nav
+        aria-label="গ্রাহক পোর্টাল মোবাইল নেভিগেশন"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_rgba(11,25,44,0.08)] pb-safe no-print"
+      >
+        <div className="grid grid-cols-5 items-center h-14 px-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab('ড্যাশবোর্ড')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              activeTab === 'ড্যাশবোর্ড'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#101C32] font-semibold'
+            }`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px] leading-none">ড্যাশবোর্ড</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('সকল প্রকল্প ও প্রপার্টি')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              activeTab === 'সকল প্রকল্প ও প্রপার্টি'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#101C32] font-semibold'
+            }`}
+          >
+            <ListFilter className="w-5 h-5" />
+            <span className="text-[10px] leading-none">সকল প্রকল্প</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('আমার বুকিং')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              activeTab === 'আমার বুকিং'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#101C32] font-semibold'
+            }`}
+          >
+            <BookmarkCheck className="w-5 h-5" />
+            <span className="text-[10px] leading-none">বুকিং</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('রিসিট')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              activeTab === 'রিসিট' || activeTab === 'পেমেন্ট'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#101C32] font-semibold'
+            }`}
+          >
+            <Receipt className="w-5 h-5" />
+            <span className="text-[10px] leading-none">রিসিট</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('প্রোফাইল')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              activeTab === 'প্রোফাইল'
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#101C32] font-semibold'
+            }`}
+          >
+            <UserCheck className="w-5 h-5" />
+            <span className="text-[10px] leading-none">প্রোফাইল</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };

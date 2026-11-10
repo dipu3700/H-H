@@ -32,6 +32,7 @@ import {
   Handshake,
   Compass,
   Landmark,
+  Home,
 } from 'lucide-react';
 import {
   SiteSettings,
@@ -663,14 +664,14 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      {/* Corporate Sticky Header with Multi-Level Dropdown Sub-Menus */}
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col pb-16 lg:pb-0">
+      {/* Corporate Sticky Header — Compact App Bar on Mobile (52px), Full 3-Zone Header on Desktop */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-13 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
           <button
             type="button"
             onClick={() => navigateToPage('home')}
-            className="focus:outline-none cursor-pointer text-left shrink-0"
+            className="focus:outline-none cursor-pointer text-left shrink-0 min-w-0"
           >
             <HHLogo variant="dark" />
           </button>
@@ -757,107 +758,182 @@ export default function App() {
             })}
           </nav>
 
-          {/* Clean Customer Portal Button Only */}
-          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+          {/* Right Action Zone: Customer Portal Button + Mobile App Trigger */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => setActiveView('portal')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold whitespace-nowrap transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold whitespace-nowrap transition-colors cursor-pointer"
             >
-              <UserCheck className="w-4 h-4 shrink-0" />
+              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>{customerUser ? customerUser.name.split(' ')[0] : 'গ্রাহক পোর্টাল'}</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="মেনু"
+              className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 transition-transform cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
-
-          {/* Mobile Menu Trigger */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="মেনু"
-            className="lg:hidden p-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
+      </header>
 
-        {/* Mobile Accordion Menu with Sub-Pages */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-2 max-h-[80vh] overflow-y-auto">
-            {NAVIGATION_MENU.map((item) => {
-              if (!item.children) {
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => item.page && navigateToPage(item.page)}
-                    className={`w-full p-3 rounded-xl text-left font-bold text-sm ${
-                      publicPage === item.page
-                        ? 'bg-[#0B192C] text-white'
-                        : 'bg-slate-50 text-slate-800'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              }
-
-              const expanded = openMobileGroup === item.id;
-              return (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-slate-200 overflow-hidden"
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenMobileGroup(expanded ? null : item.id)
-                    }
-                    className="w-full p-3 bg-slate-50 flex items-center justify-between font-bold text-sm text-slate-800"
-                  >
-                    <span>{item.label}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${
-                        expanded ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {expanded && (
-                    <div className="p-2 bg-white space-y-1 border-t border-slate-100">
-                      {item.children.map((sub) => (
-                        <button
-                          key={sub.id}
-                          type="button"
-                          onClick={() => navigateToPage(sub.id)}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold block ${
-                            publicPage === sub.id
-                              ? 'bg-emerald-50 text-emerald-800'
-                              : 'text-slate-700 hover:bg-slate-50'
-                          }`}
-                        >
-                          {sub.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+      {/* Native Mobile Bottom-Sheet Drawer Menu with Quick App Actions & Sub-Pages */}
+      {mobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-50 bg-[#07111E]/75 backdrop-blur-xs flex flex-col justify-end"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="bg-white rounded-t-3xl max-h-[82vh] flex flex-col overflow-hidden shadow-2xl border-t border-slate-200 pb-safe"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag Handle & Sheet Header */}
+            <div className="pt-2.5 pb-3 px-4 border-b border-slate-100 flex flex-col">
+              <div className="w-10 h-1.5 bg-slate-300 rounded-full mx-auto mb-2.5" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-extrabold text-emerald-700 uppercase">
+                    H &amp; H Homes মোবাইল নেভিগেশন
+                  </span>
+                  <h3 className="text-base font-extrabold text-[#0B192C]">
+                    সকল পেজ ও গ্রাহক সেবা মেনু
+                  </h3>
                 </div>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="মেনু বন্ধ করুন"
+                  className="p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
-            <div className="pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setActiveView('portal');
-                }}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-sm font-bold"
-              >
-                গ্রাহক পোর্টাল
-              </button>
+            {/* Scrollable Sheet Body */}
+            <div className="p-4 space-y-3 overflow-y-auto">
+              {/* 4 Quick App Shortcut Tiles */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('service-emi')}
+                  className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-left flex items-center gap-2.5"
+                >
+                  <Calculator className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <div>
+                    <span className="text-xs font-extrabold text-[#0B192C] block">কিস্তি ক্যালকুলেটর</span>
+                    <span className="text-[10px] text-slate-500 block">মাসিক কিস্তির হিসাব</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('projects-map')}
+                  className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-left flex items-center gap-2.5"
+                >
+                  <Compass className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <div>
+                    <span className="text-xs font-extrabold text-[#0B192C] block">লোকেশন ম্যাপ</span>
+                    <span className="text-[10px] text-slate-500 block">বসুন্ধরা ও বনশ্রী</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Accordion Menu Items */}
+              <div className="space-y-2">
+                {NAVIGATION_MENU.map((item) => {
+                  if (!item.children) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => item.page && navigateToPage(item.page)}
+                        className={`w-full p-3 rounded-xl text-left font-bold text-sm flex items-center justify-between ${
+                          publicPage === item.page
+                            ? 'bg-[#0B192C] text-white'
+                            : 'bg-slate-50 text-slate-800 border border-slate-200/80'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        <ArrowRight className="w-4 h-4 opacity-70" />
+                      </button>
+                    );
+                  }
+
+                  const expanded = openMobileGroup === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-slate-200 overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMobileGroup(expanded ? null : item.id)
+                        }
+                        className="w-full p-3 bg-slate-50 flex items-center justify-between font-bold text-sm text-slate-800"
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${
+                            expanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {expanded && (
+                        <div className="p-2 bg-white space-y-1 border-t border-slate-100">
+                          {item.children.map((sub) => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => navigateToPage(sub.id)}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold flex items-center justify-between ${
+                                publicPage === sub.id
+                                  ? 'bg-emerald-50 text-emerald-800'
+                                  : 'text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <span>{sub.label}</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setActiveView('portal');
+                  }}
+                  className="py-3 px-4 rounded-xl bg-emerald-600 text-white text-xs font-extrabold text-center"
+                >
+                  গ্রাহক পোর্টাল লগইন
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setAdminMode('realestate_erp');
+                    setActiveView('admin');
+                  }}
+                  className="py-3 px-4 rounded-xl bg-[#0B192C] text-[#FDE68A] text-xs font-extrabold text-center"
+                >
+                  ম্যানেজমেন্ট ইআরপি
+                </button>
+              </div>
             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
       {/* =========================================================
           PAGE 1: HOME PAGE (হোম)
@@ -868,7 +944,7 @@ export default function App() {
         <main className="flex-1">
           {/* Hero Banner — ONLY Project Photo and Project Name */}
           <section className="relative bg-[#0B192C] overflow-hidden">
-            <div className="relative h-[400px] sm:h-[480px] lg:h-[540px] w-full">
+            <div className="relative h-[250px] sm:h-[440px] lg:h-[540px] w-full">
               <ArchitecturalRender
                 theme={activeSlide.visualTheme}
                 hideBadge={true}
@@ -876,13 +952,13 @@ export default function App() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#07111E]/90 via-[#07111E]/25 to-transparent" />
 
               {/* Project Name Only */}
-              <div className="absolute bottom-10 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-4">
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-md">
+              <div className="absolute bottom-8 sm:bottom-10 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-3">
+                <h1 className="text-xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-md">
                   {activeSlide.titleBn}
                 </h1>
 
                 {heroSlides.length > 1 && (
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() =>
@@ -891,9 +967,9 @@ export default function App() {
                         )
                       }
                       aria-label="পূর্ববর্তী"
-                      className="p-2.5 rounded-xl bg-black/50 hover:bg-black/75 text-white border border-white/20 cursor-pointer"
+                      className="p-2 sm:p-2.5 rounded-xl bg-black/50 hover:bg-black/75 text-white border border-white/20 cursor-pointer"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                     <button
                       type="button"
@@ -901,9 +977,9 @@ export default function App() {
                         setCurrentSlideIndex((prev) => (prev + 1) % heroSlides.length)
                       }
                       aria-label="পরবর্তী"
-                      className="p-2.5 rounded-xl bg-black/50 hover:bg-black/75 text-white border border-white/20 cursor-pointer"
+                      className="p-2 sm:p-2.5 rounded-xl bg-black/50 hover:bg-black/75 text-white border border-white/20 cursor-pointer"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 )}
@@ -911,18 +987,18 @@ export default function App() {
             </div>
           </section>
 
-          {/* Floating Smart Property Finder Bar */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          {/* Floating Smart Property Finder Bar — Compact 2x2 App Filter on Mobile, 4-Column on Desktop */}
+          <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-5 sm:-mt-8 relative z-20">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-3.5 sm:p-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 items-end">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">
                     প্রপার্টির ধরন
                   </label>
                   <select
                     value={searchCategory}
                     onChange={(e) => setSearchCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
+                    className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
                   >
                     <option value="সকল ধরন">সকল ধরন</option>
                     <option value="আবাসিক জমি">আবাসিক প্লট</option>
@@ -932,13 +1008,13 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">
                     লোকেশন / এলাকা
                   </label>
                   <select
                     value={searchArea}
                     onChange={(e) => setSearchArea(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
+                    className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
                   >
                     <option value="সকল এলাকা">সকল এলাকা</option>
                     {uniqueAreas.map((area) => (
@@ -950,13 +1026,13 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">
                     সর্বোচ্চ বাজেট
                   </label>
                   <select
                     value={maxBudget}
                     onChange={(e) => setMaxBudget(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
+                    className="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold bg-slate-50 focus:outline-none focus:border-emerald-600"
                   >
                     <option value={0}>যেকোনো বাজেট</option>
                     <option value={5000000}>৳ ৫০ লক্ষ পর্যন্ত</option>
@@ -965,16 +1041,16 @@ export default function App() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       const el = document.getElementById('featured-properties');
                       if (el) el.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#0B192C] hover:bg-emerald-700 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl bg-[#0B192C] hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Search className="w-4 h-4" />
+                    <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span>খুঁজুন</span>
                   </button>
                   {(searchCategory !== 'সকল ধরন' || searchArea !== 'সকল এলাকা' || maxBudget > 0) && (
@@ -986,7 +1062,7 @@ export default function App() {
                         setSearchProject('all');
                         setMaxBudget(0);
                       }}
-                      className="py-2.5 px-3 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                      className="py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                     >
                       রিসেট
                     </button>
@@ -997,8 +1073,8 @@ export default function App() {
           </section>
 
           {/* Corporate At-A-Glance Metrics Ribbon (Inspired by Sheltech & bti) */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-2 sm:pb-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {[
                 {
                   metric: '১২+ বছর',
@@ -1023,14 +1099,14 @@ export default function App() {
               ].map((stat) => (
                 <div
                   key={stat.metric}
-                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between"
+                  className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200 shadow-xs flex flex-col justify-between"
                 >
-                  <span className="text-xl sm:text-2xl font-extrabold text-emerald-700">
+                  <span className="text-base sm:text-2xl font-extrabold text-emerald-700">
                     {stat.metric}
                   </span>
-                  <div className="mt-2">
-                    <h3 className="text-sm font-extrabold text-[#0F172A]">{stat.title}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{stat.sub}</p>
+                  <div className="mt-1.5 sm:mt-2">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#0F172A]">{stat.title}</h3>
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">{stat.sub}</p>
                   </div>
                 </div>
               ))}
@@ -1038,19 +1114,19 @@ export default function App() {
           </section>
 
           {/* Interactive Signature Projects Showcase (Inspired by Shanta Holdings & Assure Group) */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+          <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-5 sm:space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 border-b border-slate-200 pb-3 sm:pb-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
                   সিগনেচার ডেভেলপমেন্ট · {companyName}
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] mt-1">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-[#0F172A] mt-0.5 sm:mt-1">
                   আমাদের প্রকল্পসমূহ
                 </h2>
               </div>
 
-              {/* Project Status Tabs on Homepage */}
-              <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+              {/* Project Status Tabs on Homepage — Swipeable single line on mobile */}
+              <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 overflow-x-auto no-scrollbar max-w-full">
                 {(
                   [
                     { id: 'all', label: 'সকল প্রকল্প' },
@@ -1063,7 +1139,7 @@ export default function App() {
                     key={tab.id}
                     type="button"
                     onClick={() => setHomeProjectTab(tab.id)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
                       homeProjectTab === tab.id
                         ? 'bg-[#0B192C] text-white'
                         : 'text-slate-700 hover:text-[#0F172A]'
@@ -1075,7 +1151,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {homeFilteredProjects.map(renderProjectCard)}
             </div>
           </section>
@@ -2581,6 +2657,78 @@ export default function App() {
           }}
         />
       )}
+
+      {/* Native Mobile Fixed Bottom Navigation Bar (Thumb Zone) */}
+      <nav
+        aria-label="মোবাইল অ্যাপ নেভিগেশন"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_rgba(11,25,44,0.08)] pb-safe no-print"
+      >
+        <div className="grid grid-cols-5 items-center h-14 px-1">
+          <button
+            type="button"
+            onClick={() => navigateToPage('home')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              publicPage === 'home' && !mobileMenuOpen
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B192C] font-semibold'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] leading-none">হোম</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigateToPage('projects-all')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              publicPage.startsWith('projects-') && !mobileMenuOpen
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B192C] font-semibold'
+            }`}
+          >
+            <Building2 className="w-5 h-5" />
+            <span className="text-[10px] leading-none">প্রকল্প</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigateToPage('properties-all')}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              publicPage.startsWith('properties-') && !mobileMenuOpen
+                ? 'text-emerald-700 font-extrabold'
+                : 'text-slate-500 hover:text-[#0B192C] font-semibold'
+            }`}
+          >
+            <Compass className="w-5 h-5" />
+            <span className="text-[10px] leading-none">প্রপার্টি</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setActiveView('portal');
+            }}
+            className="flex flex-col items-center justify-center gap-0.5 h-full rounded-xl text-slate-500 hover:text-emerald-700 font-semibold transition-colors cursor-pointer"
+          >
+            <UserCheck className="w-5 h-5 text-emerald-600" />
+            <span className="text-[10px] leading-none font-bold text-emerald-700">পোর্টাল</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
+              mobileMenuOpen
+                ? 'text-[#0B192C] font-extrabold'
+                : 'text-slate-500 hover:text-[#0B192C] font-semibold'
+            }`}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <span className="text-[10px] leading-none">মেনু</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Official Project Brochure Modal */}
       {brochureOpen && brochureProject && (

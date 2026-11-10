@@ -455,70 +455,73 @@ export const MoneyReceiptModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#071120]/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-5 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-[#071120]/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label={`মানি রিসিট ${receipt.receiptNumber}`}
     >
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border-2 border-[#0B192C] shadow-2xl my-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-4xl w-full max-h-[94vh] sm:max-h-[92vh] flex flex-col overflow-hidden border-t-2 sm:border-2 border-[#0B192C] shadow-2xl sm:my-auto">
         {/* Top Action & Copy Selector Bar (Hidden in Print) */}
-        <div className="bg-[#0B192C] text-white px-5 py-3.5 border-b border-[#C6A15B]/40 flex flex-wrap items-center justify-between gap-3 shrink-0 no-print">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              অফিশিয়াল কর্পোরেট মানি রিসিট · {receipt.receiptNumber}
-            </span>
+        <div className="bg-[#0B192C] text-white px-3.5 sm:px-5 pt-2.5 pb-3 sm:py-3.5 border-b border-[#C6A15B]/40 flex flex-col gap-2 shrink-0 no-print">
+          <div className="w-10 h-1.5 bg-white/25 rounded-full mx-auto sm:hidden" />
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-[11px] sm:text-xs">
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
+                <span className="truncate">মানি রিসিট · {receipt.receiptNumber}</span>
+              </span>
 
-            {/* Copy Type Switcher */}
-            <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl">
-              {(
-                [
-                  'গ্রাহক কপি (CUSTOMER COPY)',
-                  'অফিস কপি (OFFICE COPY)',
-                  'হিসাব বিভাগ কপি (ACCOUNTS COPY)',
-                ] as ReceiptCopyType[]
-              ).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setCopyType(type)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-colors cursor-pointer ${
-                    copyType === type
-                      ? 'bg-[#C6A15B] text-[#0B192C]'
-                      : 'text-white/75 hover:text-white'
-                  }`}
-                >
-                  {type.split(' (')[0]}
-                </button>
-              ))}
+              {/* Copy Type Switcher */}
+              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl overflow-x-auto no-scrollbar">
+                {(
+                  [
+                    'গ্রাহক কপি (CUSTOMER COPY)',
+                    'অফিস কপি (OFFICE COPY)',
+                    'হিসাব বিভাগ কপি (ACCOUNTS COPY)',
+                  ] as ReceiptCopyType[]
+                ).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setCopyType(type)}
+                    className={`px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold whitespace-nowrap transition-colors cursor-pointer ${
+                      copyType === type
+                        ? 'bg-[#C6A15B] text-[#0B192C]'
+                        : 'text-white/75 hover:text-white'
+                    }`}
+                  >
+                    {type.split(' (')[0]}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDownloadReceiptHtml}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition-colors cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>রিসিট ডাউনলোড করুন</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C6A15B] hover:bg-[#d4b06a] text-[#0B192C] text-xs sm:text-sm font-extrabold transition-colors cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>প্রিন্ট / PDF</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="রিসিট বন্ধ করুন"
-              className="p-2 rounded-xl text-white/75 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={handleDownloadReceiptHtml}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>রিসিট ডাউনলোড করুন</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#C6A15B] hover:bg-[#d4b06a] text-[#0B192C] text-xs sm:text-sm font-extrabold transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>প্রিন্ট / PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="রিসিট বন্ধ করুন"
+                className="p-1.5 sm:p-2 rounded-xl text-white/75 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -526,32 +529,32 @@ export const MoneyReceiptModal: React.FC<{
         <div className="h-1.5 bg-gradient-to-r from-[#0B192C] via-emerald-500 to-[#C6A15B] shrink-0" />
 
         {/* Printable Official Corporate Money Receipt Body */}
-        <div className="p-5 sm:p-8 space-y-5 bg-white text-[#0F172A] relative overflow-y-auto flex-1">
+        <div className="p-3.5 sm:p-8 space-y-4 sm:space-y-5 bg-white text-[#0F172A] relative overflow-y-auto flex-1">
           {/* Executive Corporate Letterhead */}
-          <div className="bg-gradient-to-r from-[#071120] via-[#0B192C] to-[#06392F] text-white p-5 sm:p-6 rounded-2xl border-b-4 border-[#C6A15B] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
+          <div className="bg-gradient-to-r from-[#071120] via-[#0B192C] to-[#06392F] text-white p-4 sm:p-6 rounded-2xl border-b-4 border-[#C6A15B] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 shadow-md">
             <div className="space-y-1.5">
               <HHLogo variant="light" />
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/10 border border-[#C6A15B]/40 text-[#FDE68A] text-[11px] font-bold">
-                  <Award className="w-3 h-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/10 border border-[#C6A15B]/40 text-[#FDE68A] text-[10px] sm:text-[11px] font-bold">
+                  <Award className="w-3 h-3 text-emerald-400 shrink-0" />
                   REHAB &amp; RAJUK তালিকাভুক্ত রিয়েল এস্টেট ডেভেলপার
                 </span>
-                <span className="text-[11px] text-emerald-300 font-mono font-bold">
+                <span className="text-[10px] sm:text-[11px] text-emerald-300 font-mono font-bold">
                   RJSC Reg: C-184920/BD
                 </span>
               </div>
             </div>
 
-            <div className="text-xs md:text-right space-y-1 text-slate-200 border-t md:border-t-0 pt-3 md:pt-0 border-white/15">
-              <p className="font-extrabold text-white flex md:justify-end items-center gap-1.5 text-sm whitespace-nowrap">
-                <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="text-xs md:text-right space-y-1 text-slate-200 border-t md:border-t-0 pt-2.5 md:pt-0 border-white/15">
+              <p className="font-extrabold text-white flex md:justify-end items-center gap-1.5 text-xs sm:text-sm sm:whitespace-nowrap">
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
                 <span>প্রধান কার্যালয়: রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা।</span>
               </p>
-              <p className="text-[#FDE68A] font-bold flex md:justify-end items-center gap-1.5 whitespace-nowrap">
+              <p className="text-[#FDE68A] font-bold flex md:justify-end items-center gap-1.5 text-xs sm:whitespace-nowrap">
                 <Building2 className="w-3.5 h-3.5 text-[#C6A15B] shrink-0" />
                 <span>ল্যান্ড প্রজেক্ট জোন: বসুন্ধরা আবাসিক এলাকা, ঢাকা</span>
               </p>
-              <p className="flex md:justify-end items-center gap-1.5 text-white/90 whitespace-nowrap">
+              <p className="flex md:justify-end items-center gap-1.5 text-white/90 text-xs sm:whitespace-nowrap">
                 <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>+৮৮০ ১৭১১-২২৩৩৪৪ · info@hhhomesbd.com</span>
               </p>

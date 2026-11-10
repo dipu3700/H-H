@@ -11,10 +11,10 @@ export function HHLogo({
   const subColor = variant === 'light' ? 'text-emerald-300' : 'text-[#059669]';
 
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2 sm:gap-3 select-none ${className}`}>
       <svg
         viewBox="0 0 88 88"
-        className="w-12 h-12 md:w-13 md:h-13 shrink-0 drop-shadow-sm"
+        className="w-9 h-9 sm:w-12 sm:h-12 md:w-13 md:h-13 shrink-0 drop-shadow-sm"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-label="H & H Homes লোগো"
@@ -76,13 +76,13 @@ export function HHLogo({
           H &amp; H HOMES
         </text>
       </svg>
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0">
         <span
-          className={`text-xl md:text-2xl font-extrabold tracking-tight leading-none ${titleColor}`}
+          className={`text-base sm:text-xl md:text-2xl font-extrabold tracking-tight leading-none truncate ${titleColor}`}
         >
           H &amp; H Homes
         </span>
-        <span className={`text-xs font-semibold mt-1 tracking-wide ${subColor}`}>
+        <span className={`text-[10px] sm:text-xs font-semibold mt-0.5 sm:mt-1 tracking-wide truncate ${subColor}`}>
           এইচ অ্যান্ড এইচ হোমস · বনশ্রী, ঢাকা
         </span>
       </div>

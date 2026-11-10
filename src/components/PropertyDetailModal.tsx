@@ -166,31 +166,34 @@ export const PropertyDetailModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#0F172A]/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-[#0F172A]/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label={property.titleBn}
     >
-      <div className="bg-slate-50 rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto border border-slate-200 shadow-2xl">
+      <div className="bg-slate-50 rounded-t-3xl sm:rounded-2xl max-w-5xl w-full max-h-[94vh] sm:max-h-[92vh] overflow-y-auto border-t sm:border border-slate-200 shadow-2xl">
         {/* Sticky Modal Header */}
-        <div className="sticky top-0 z-20 bg-[#0B192C] text-white px-6 py-4 flex items-center justify-between border-b border-slate-700">
-          <div>
-            <div className="text-xs text-emerald-300 font-semibold">
-              প্রপার্টি আইডি: {property.propertyCode} · {property.categoryBn} · {property.statusBn}
+        <div className="sticky top-0 z-20 bg-[#0B192C] text-white px-4 sm:px-6 pt-2.5 pb-3.5 sm:py-4 flex flex-col border-b border-slate-700">
+          <div className="w-10 h-1.5 bg-white/25 rounded-full mx-auto mb-2 sm:hidden" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-[11px] sm:text-xs text-emerald-300 font-semibold truncate">
+                প্রপার্টি আইডি: {property.propertyCode} · {property.categoryBn} · {property.statusBn}
+              </div>
+              <h2 className="text-base sm:text-xl font-bold mt-0.5 truncate">{property.titleBn}</h2>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold mt-0.5">{property.titleBn}</h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="প্রপার্টি বিস্তারিত বন্ধ করুন"
+              className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="প্রপার্টি বিস্তারিত বন্ধ করুন"
-            className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        <div className="p-6 md:p-8 space-y-8">
+        <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
           {/* Large Image Slider + Quick Action Card */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             <div className="lg:col-span-7 flex flex-col gap-3">

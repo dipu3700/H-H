@@ -80,46 +80,49 @@ export const ProjectPropertyViewerModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#071120]/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-5 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-[#071120]/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label={isProject ? project?.nameBn : property?.titleBn}
     >
-      <div className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden border-2 border-[#0B192C] shadow-2xl my-auto">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-4xl w-full max-h-[94vh] sm:max-h-[92vh] flex flex-col overflow-hidden border-t-2 sm:border-2 border-[#0B192C] shadow-2xl sm:my-auto">
         {/* Top Bar */}
-        <div className="bg-[#0B192C] text-white px-5 py-3.5 border-b border-[#C6A15B]/40 flex flex-wrap items-center justify-between gap-3 no-print">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-xs">
-              <Building2 className="w-4 h-4 text-emerald-400" />
-              {contextLabelBn}
-            </span>
-            <span className="text-xs text-[#FDE68A] font-bold">
-              {isProject ? 'মাস্টার প্রজেক্ট ফাইল' : `প্রপার্টি কোড: ${property?.propertyCode}`}
-            </span>
-          </div>
+        <div className="bg-[#0B192C] text-white px-4 sm:px-5 pt-2.5 pb-3 sm:py-3.5 border-b border-[#C6A15B]/40 flex flex-col gap-2 shrink-0 no-print">
+          <div className="w-10 h-1.5 bg-white/25 rounded-full mx-auto sm:hidden" />
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-extrabold text-[11px] sm:text-xs truncate">
+                <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
+                <span className="truncate">{contextLabelBn}</span>
+              </span>
+              <span className="text-[11px] sm:text-xs text-[#FDE68A] font-bold hidden sm:inline">
+                {isProject ? 'মাস্টার প্রজেক্ট ফাইল' : `প্রপার্টি কোড: ${property?.propertyCode}`}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold transition-colors cursor-pointer"
-            >
-              <Printer className="w-4 h-4 text-[#FDE68A]" />
-              <span>তথ্যপত্র প্রিন্ট করুন</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="বন্ধ করুন"
-              className="p-2 rounded-xl text-white/75 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FDE68A]" />
+                <span>তথ্যপত্র প্রিন্ট করুন</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="বন্ধ করুন"
+                className="p-1.5 sm:p-2 rounded-xl text-white/75 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="p-5 sm:p-8 space-y-6 bg-white text-[#0F172A] max-h-[85vh] overflow-y-auto">
+        <div className="p-4 sm:p-8 space-y-5 sm:space-y-6 bg-white text-[#0F172A] overflow-y-auto flex-1">
           {/* Header Banner & Visual */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             <div className="lg:col-span-6 rounded-2xl overflow-hidden border-2 border-[#0B192C]/15 shadow-md min-h-[250px] relative">

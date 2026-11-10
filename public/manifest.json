@@ -1,0 +1,18 @@
+{
+  "name": "H & H Homes | এইচ অ্যান্ড এইচ হোমস",
+  "short_name": "H & H Homes",
+  "description": "H & H Homes (এইচ অ্যান্ড এইচ হোমস) — প্রধান কার্যালয়: রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা। বসুন্ধরায় পরিকল্পিত আবাসিক জমির প্লট এবং বনশ্রীতে আধুনিক অ্যাপার্টমেন্ট।",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B192C",
+  "theme_color": "#0B192C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
