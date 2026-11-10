@@ -1,6 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { installCloudflareApiFallback } from './utils/cloudflareStandaloneApi.ts';
+
+installCloudflareApiFallback();
 
 // Google Maps Platform Demo Key Quota Listener (Tier 1)
 (window as any).gm_authFailure = () => {

@@ -2348,37 +2348,42 @@ export const AdminCmsView: React.FC<{
                     ))}
                   </div>
 
-                  {/* Cloud Git Deployment & Build Command Reference Card */}
+                  {/* Cloud Git Deployment & Cloudflare Pages Reference Card */}
                   <div className="bg-[#0B162C] text-white rounded-2xl p-6 border-2 border-[#C6A15B]/50 shadow-md space-y-4">
                     <div className="flex items-center gap-2.5">
                       <Terminal className="w-6 h-6 text-[#34D399]" />
                       <div>
                         <span className="text-xs font-bold text-[#FDE68A] uppercase">
-                          ক্লাউড গিট ডিপ্লয়মেন্ট গাইড (Cloud Git Deployment)
+                          Cloudflare Pages / Workers ও Git ডিপ্লয়মেন্ট গাইড
                         </span>
                         <h4 className="text-lg font-extrabold text-white">
-                          গিট (Git) থেকে ক্লাউডে বিল্ড ও রান কমান্ড
+                          গিট (Git) থেকে ক্লাউডফ্লেয়ারে (Cloudflare) বিল্ড ও আউটপুট সেটিংস
                         </h4>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                       <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
-                        <span className="text-emerald-300 font-bold block">1. Build Command</span>
+                        <span className="text-emerald-300 font-bold block">1. Build Command (ক্লাউডফ্লেয়ার)</span>
                         <code className="font-mono text-white font-bold block">
-                          npm install &amp;&amp; npm run build
+                          npm run build
                         </code>
                       </div>
                       <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
-                        <span className="text-emerald-300 font-bold block">2. Start Command</span>
+                        <span className="text-emerald-300 font-bold block">2. Build Output Directory</span>
+                        <code className="font-mono text-[#FDE68A] font-bold block">
+                          dist
+                        </code>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
+                        <span className="text-emerald-300 font-bold block">3. Node.js Server Start (VPS/Render)</span>
                         <code className="font-mono text-white font-bold block">
                           NODE_ENV=production npm start
                         </code>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-white/10 border border-white/15 space-y-1">
-                        <span className="text-emerald-300 font-bold block">3. Static Output Dir</span>
-                        <code className="font-mono text-white font-bold block">dist</code>
-                      </div>
                     </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      নোট: Cloudflare Pages-এ ডিপ্লয় করার সময় অবশ্যই <strong>Build command</strong> হিসেবে <code className="text-[#FDE68A]">npm run build</code> এবং <strong>Build output directory</strong> হিসেবে <code className="text-[#FDE68A]">dist</code> দিন (ফাঁকা বা <code className="text-rose-300">/</code> দিলে কাঁচা <code className="text-rose-300">/src/main.tsx</code> লোড হয়ে সাদা পেজ দেখাবে)। প্রজেক্টে ইতিমধ্যে <code className="text-emerald-300">wrangler.jsonc</code>, <code className="text-emerald-300">public/_redirects</code> এবং স্ট্যান্ডঅ্যালোন ক্লাউডফ্লেয়ার ডাটা ইঞ্জিন যুক্ত করা হয়েছে।
+                    </p>
                   </div>
                 </div>
               )}
