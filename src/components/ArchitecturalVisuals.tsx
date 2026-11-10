@@ -1,4 +1,27 @@
 import React from 'react';
+import signatureTowerImg from '../assets/images/hh_signature_tower_1794297797561.jpg';
+import greenLandPlotImg from '../assets/images/hh_green_land_plot_1794297798550.jpg';
+import duplexVillaLandImg from '../assets/images/hh_duplex_villa_land_1794297801362.jpg';
+import commercialSquareImg from '../assets/images/hh_commercial_square_1794297799604.jpg';
+import luxuryInteriorImg from '../assets/images/hh_luxury_apartment_interior_1794297802463.jpg';
+
+export const REAL_ESTATE_IMAGES = {
+  signatureTower: signatureTowerImg,
+  greenLandPlot: greenLandPlotImg,
+  duplexVillaLand: duplexVillaLandImg,
+  commercialSquare: commercialSquareImg,
+  luxuryInterior: luxuryInteriorImg,
+};
+
+export function resolveImageUrl(raw?: string): string {
+  if (!raw) return signatureTowerImg;
+  if (raw.includes('hh_signature_tower') || raw.includes('signature')) return signatureTowerImg;
+  if (raw.includes('hh_green_land_plot') || raw.includes('green') || raw.includes('township')) return greenLandPlotImg;
+  if (raw.includes('hh_duplex_villa_land') || raw.includes('duplex') || raw.includes('villa')) return duplexVillaLandImg;
+  if (raw.includes('hh_commercial_square') || raw.includes('commercial')) return commercialSquareImg;
+  if (raw.includes('hh_luxury_apartment_interior') || raw.includes('interior') || raw.includes('penthouse')) return luxuryInteriorImg;
+  return raw;
+}
 
 export function HHLogo({
   variant = 'dark',
@@ -106,7 +129,7 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
     titleBn: 'এইচ অ্যান্ড এইচ সিগনেচার টাওয়ার (১৪ তলা আবাসিক ভবন)',
     subtitleBn: 'আধুনিক গ্লাস ফ্যাসাদ, ডাবল-হাইট লবি ও রুফটপ গার্ডেনসহ লাক্সারি অ্যাপার্টমেন্ট ভবন',
     category: 'building',
-    imageUrl: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    imageUrl: signatureTowerImg,
     locationBn: 'রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা',
     tagBn: 'আধুনিক ভবনের ছবি',
   },
@@ -115,7 +138,7 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
     titleBn: 'এইচ অ্যান্ড এইচ বসুন্ধরা গ্রিন টাউনশিপ ও রেডি আবাসিক প্লট',
     subtitleBn: '৪০ ফুট প্রশস্ত পাকা রাস্তা, সীমানা প্রাচীর ও প্রাকৃতিক লেকপাড়ের নিষ্কণ্টক আবাসিক জমি',
     category: 'land',
-    imageUrl: '/src/assets/images/hh_green_land_plot_1794297798550.jpg',
+    imageUrl: greenLandPlotImg,
     locationBn: 'বসুন্ধরা আবাসিক এলাকা, ঢাকা',
     tagBn: 'বসুন্ধরা আবাসিক জমি',
   },
@@ -124,7 +147,7 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
     titleBn: 'দক্ষিণমুখী কর্নার প্লট ও ডুপ্লেক্স ভিলা ল্যান্ড (বসুন্ধরা)',
     subtitleBn: 'তাৎক্ষণিক বাড়ি নির্মাণের উপযোগী উঁচু ভিটা, বিদ্যুৎ ও ড্রেনেজ সুবিধাসহ প্রিমিয়াম প্লট',
     category: 'land',
-    imageUrl: '/src/assets/images/hh_duplex_villa_land_1794297801362.jpg',
+    imageUrl: duplexVillaLandImg,
     locationBn: 'ব্লক: আই, বসুন্ধরা আবাসিক এলাকা, ঢাকা',
     tagBn: 'বসুন্ধরা কর্নার প্লট',
   },
@@ -133,7 +156,7 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
     titleBn: 'এইচ অ্যান্ড এইচ কমার্শিয়াল স্কয়ার ও কর্পোরেট ভবন',
     subtitleBn: 'মেইন রোড সংলগ্ন আধুনিক শপিং প্লাজা, ব্যাংক ও কর্পোরেট অফিস স্পেস',
     category: 'building',
-    imageUrl: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    imageUrl: commercialSquareImg,
     locationBn: 'বনশ্রী মেইন অ্যাভিনিউ, ঢাকা',
     tagBn: 'বাণিজ্যিক ভবন',
   },
@@ -142,7 +165,7 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
     titleBn: 'প্রিমিয়াম ফ্ল্যাট ইন্টেরিয়র ও প্রশস্ত ড্রয়িং-ডাইনিং',
     subtitleBn: 'মার্বেল ফ্লোরিং, প্যানোরামিক স্লাইডিং গ্লাস ও প্রাকৃতিক আলো-বাতাসপূর্ণ ফ্ল্যাট ডিজাইন',
     category: 'interior',
-    imageUrl: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    imageUrl: luxuryInteriorImg,
     locationBn: 'রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা',
     tagBn: 'ফ্ল্যাট ইন্টেরিয়র',
   },
@@ -150,103 +173,103 @@ export const REAL_ESTATE_PHOTO_COLLECTION: PhotoCollectionItem[] = [
 
 const THEME_PHOTO_MAP: Record<string, { url: string; badgeText: string }> = {
   hero_3d_twin_towers: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'এইচ অ্যান্ড এইচ সিগনেচার টাওয়ার',
   },
   hero_3d_green_township: {
-    url: '/src/assets/images/hh_green_land_plot_1794297798550.jpg',
+    url: greenLandPlotImg,
     badgeText: 'বসুন্ধরা আবাসিক প্লট প্রকল্প',
   },
   hero_3d_sky_penthouse: {
-    url: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    url: luxuryInteriorImg,
     badgeText: 'লাক্সারি ফ্ল্যাট ও পেন্টহাউস ইন্টেরিয়র',
   },
   hero_3d_royal_commercial: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'আধুনিক বাণিজ্যিক ভবন ও অফিস স্পেস',
   },
   project_3d_township: {
-    url: '/src/assets/images/hh_green_land_plot_1794297798550.jpg',
+    url: greenLandPlotImg,
     badgeText: 'বসুন্ধরা রেডি আবাসিক প্লট প্রজেক্ট',
   },
   project_3d_twin_towers: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: '১৪ তলা লাক্সারি আবাসিক ভবন',
   },
   project_3d_commercial_tower: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'বাণিজ্যিক কমপ্লেক্স ও কর্পোরেট টাওয়ার',
   },
   project_3d_palace_residency: {
-    url: '/src/assets/images/hh_duplex_villa_land_1794297801362.jpg',
+    url: duplexVillaLandImg,
     badgeText: 'বনশ্রী প্রিমিয়াম রেসিডেন্সি ও ভিলা',
   },
   prop_3d_villa_plot_a: {
-    url: '/src/assets/images/hh_duplex_villa_land_1794297801362.jpg',
+    url: duplexVillaLandImg,
     badgeText: 'দক্ষিণমুখী আবাসিক ভিলা প্লট (বসুন্ধরা)',
   },
   prop_3d_lakeview_plot_b: {
-    url: '/src/assets/images/hh_green_land_plot_1794297798550.jpg',
+    url: greenLandPlotImg,
     badgeText: 'লেকভিউ কর্নার প্লট (বসুন্ধরা)',
   },
   prop_3d_commercial_plot_c: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'বাণিজ্যিক প্লট (বসুন্ধরা মেইন অ্যাভিনিউ)',
   },
   prop_3d_apartment_royal: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'দক্ষিণমুখী লাক্সারি অ্যাপার্টমেন্ট ভবন',
   },
   prop_3d_penthouse_duplex: {
-    url: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    url: luxuryInteriorImg,
     badgeText: 'ডুপ্লেক্স পেন্টহাউস ও ফ্ল্যাট ইন্টেরিয়র',
   },
   prop_3d_ready_condo: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'রেডি ফ্ল্যাট ও আধুনিক ভবন',
   },
   prop_3d_commercial_suite: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'কর্পোরেট অফিস ফ্লোর ও কমার্শিয়াল স্পেস',
   },
   gallery_3d_twin_night: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'এইচ অ্যান্ড এইচ সিগনেচার বিল্ডিং',
   },
   gallery_3d_duplex_villa: {
-    url: '/src/assets/images/hh_duplex_villa_land_1794297801362.jpg',
+    url: duplexVillaLandImg,
     badgeText: 'ডুপ্লেক্স ভিলা ও বসুন্ধরা আবাসিক প্লট',
   },
   gallery_3d_grand_lobby: {
-    url: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    url: luxuryInteriorImg,
     badgeText: 'লাক্সারি ফ্ল্যাট ড্রয়িং ও ডাইনিং',
   },
   gallery_3d_rooftop_pool: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'আধুনিক ভবনের এক্সটেরিয়র ভিউ',
   },
   gallery_3d_master_suite: {
-    url: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    url: luxuryInteriorImg,
     badgeText: 'মাস্টার স্যুইট ও ফ্ল্যাট ইন্টেরিয়র',
   },
   gallery_3d_commercial_atrium: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'বাণিজ্যিক ভবন ও শপিং প্লাজা',
   },
   video_3d_tower_walkthrough: {
-    url: '/src/assets/images/hh_signature_tower_1794297797561.jpg',
+    url: signatureTowerImg,
     badgeText: 'আবাসিক ভবন প্রজেক্ট ওয়াকথ্রু',
   },
   video_3d_township_drone: {
-    url: '/src/assets/images/hh_green_land_plot_1794297798550.jpg',
+    url: greenLandPlotImg,
     badgeText: 'বসুন্ধরা আবাসিক জমি ও প্লট ড্রোন ভিউ',
   },
   video_3d_interior_tour: {
-    url: '/src/assets/images/hh_luxury_apartment_interior_1794297802463.jpg',
+    url: luxuryInteriorImg,
     badgeText: 'রেডি ফ্ল্যাট ইন্টেরিয়র ট্যুর',
   },
   video_3d_engineering_qc: {
-    url: '/src/assets/images/hh_commercial_square_1794297799604.jpg',
+    url: commercialSquareImg,
     badgeText: 'ইঞ্জিনিয়ারিং ও নির্মাণ গুণগত মান',
   },
 };
@@ -266,11 +289,38 @@ export function ArchitecturalRender({
     theme.startsWith('http://') ||
     theme.startsWith('https://') ||
     theme.startsWith('/src/assets/') ||
-    theme.startsWith('/assets/');
+    theme.startsWith('/assets/') ||
+    theme.startsWith('/images/') ||
+    theme.startsWith('data:');
 
   const mapped = THEME_PHOTO_MAP[theme] || THEME_PHOTO_MAP.hero_3d_twin_towers;
-  const imgSrc = isDirectUrl ? theme : mapped.url;
+  const initialResolved = resolveImageUrl(isDirectUrl ? theme : mapped.url);
   const badge = label || mapped.badgeText;
+
+  const [imgSrc, setImgSrc] = React.useState<string>(initialResolved);
+  const [loadFailed, setLoadFailed] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    setImgSrc(resolveImageUrl(isDirectUrl ? theme : mapped.url));
+    setLoadFailed(false);
+  }, [theme, isDirectUrl, mapped.url]);
+
+  const handleError = () => {
+    if (!loadFailed) {
+      if (theme.includes('green') || theme.includes('township') || theme.includes('land') || theme.includes('lakeview')) {
+        setImgSrc('/images/hh_green_land_plot.jpg');
+      } else if (theme.includes('duplex') || theme.includes('villa')) {
+        setImgSrc('/images/hh_duplex_villa_land.jpg');
+      } else if (theme.includes('commercial')) {
+        setImgSrc('/images/hh_commercial_square.jpg');
+      } else if (theme.includes('interior') || theme.includes('penthouse') || theme.includes('suite')) {
+        setImgSrc('/images/hh_luxury_apartment_interior.jpg');
+      } else {
+        setImgSrc('/images/hh_signature_tower.jpg');
+      }
+      setLoadFailed(true);
+    }
+  };
 
   return (
     <div
@@ -280,7 +330,7 @@ export function ArchitecturalRender({
         src={imgSrc}
         alt={badge}
         loading="lazy"
-        referrerPolicy="no-referrer"
+        onError={handleError}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/60 via-transparent to-[#0F172A]/15 pointer-events-none" />

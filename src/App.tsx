@@ -57,6 +57,7 @@ import {
   ExecutivePortrait,
   REAL_ESTATE_PHOTO_COLLECTION,
   PhotoCollectionItem,
+  resolveImageUrl,
 } from './components/ArchitecturalVisuals';
 import { ProjectMapSection } from './components/ProjectMapSection';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
@@ -1827,10 +1828,13 @@ export default function App() {
                   >
                     <div className="relative h-60 overflow-hidden bg-slate-900">
                       <img
-                        src={item.imageUrl}
+                        src={resolveImageUrl(item.imageUrl)}
                         alt={item.titleBn}
                         loading="lazy"
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/hh_signature_tower.jpg';
+                        }}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute top-3 left-3">
@@ -2595,9 +2599,12 @@ export default function App() {
           >
             <div className="relative h-80 sm:h-[460px] bg-slate-900">
               <img
-                src={lightboxPhoto.imageUrl}
+                src={resolveImageUrl(lightboxPhoto.imageUrl)}
                 alt={lightboxPhoto.titleBn}
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/hh_signature_tower.jpg';
+                }}
                 className="w-full h-full object-cover"
               />
               <button
