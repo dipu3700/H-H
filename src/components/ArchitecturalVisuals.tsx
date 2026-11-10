@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function NazihaLogo({
+export function HHLogo({
   variant = 'dark',
   className = '',
 }: {
@@ -89,8 +89,6 @@ export function NazihaLogo({
     </div>
   );
 }
-
-export const HHLogo = NazihaLogo;
 
 export interface PhotoCollectionItem {
   id: string;

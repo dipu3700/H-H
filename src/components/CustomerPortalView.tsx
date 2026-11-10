@@ -25,6 +25,11 @@ import {
   KeyRound,
   Download,
   Database,
+  Eye,
+  ListFilter,
+  LayoutGrid,
+  List,
+  Search,
 } from 'lucide-react';
 import {
   BookingItem,
@@ -36,11 +41,13 @@ import {
   CustomerUser,
 } from '../types';
 import { formatExactBdtBengali, toBengaliDigits } from '../utils/bengaliLogic';
-import { ArchitecturalRender, NazihaLogo } from './ArchitecturalVisuals';
+import { ArchitecturalRender, HHLogo } from './ArchitecturalVisuals';
 import { MoneyReceiptModal, MoneyReceiptData } from './MoneyReceiptModal';
+import { ProjectPropertyViewerModal, ViewerTarget } from './ProjectPropertyViewerModal';
 
 type PortalTab =
   | 'ড্যাশবোর্ড'
+  | 'সকল প্রকল্প ও প্রপার্টি'
   | 'আমার প্রপার্টি'
   | 'আমার বুকিং'
   | 'পেমেন্ট'
@@ -55,6 +62,7 @@ type PortalTab =
 
 const PORTAL_MENU: { label: PortalTab; icon: React.FC<{ className?: string }> }[] = [
   { label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
+  { label: 'সকল প্রকল্প ও প্রপার্টি', icon: ListFilter },
   { label: 'আমার প্রপার্টি', icon: Building2 },
   { label: 'আমার বুকিং', icon: BookmarkCheck },
   { label: 'পেমেন্ট', icon: CreditCard },
@@ -108,6 +116,10 @@ export const CustomerPortalView: React.FC<{
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<number | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<MoneyReceiptData | null>(null);
+  const [viewerTarget, setViewerTarget] = useState<ViewerTarget | null>(null);
+  const [portalViewMode, setPortalViewMode] = useState<'list' | 'grid'>('list');
+  const [portalStatusFilter, setPortalStatusFilter] = useState<string>('সকল');
+  const [portalSearchQuery, setPortalSearchQuery] = useState<string>('');
 
   const [subjectBn, setSubjectBn] = useState('');
   const [messageBn, setMessageBn] = useState('');
@@ -279,7 +291,7 @@ export const CustomerPortalView: React.FC<{
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#071120] via-[#101C32] to-[#06392F] flex flex-col justify-between p-4 md:p-8 text-white">
         <div className="max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 py-2">
-          <NazihaLogo variant="light" />
+          <HHLogo variant="light" />
           <div className="flex items-center gap-2.5">
             {onOpenAdminPanel && (
               <button
@@ -718,13 +730,25 @@ export const CustomerPortalView: React.FC<{
               activeTab === 'আমার প্রপার্টি' ||
               activeTab === 'বকেয়া হিসাব') && (
               <div className="bg-white rounded-2xl p-6 border border-[#101C32]/10 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-extrabold text-[#101C32]">
-                    বুকিং ও বরাদ্দকৃত প্রপার্টির তালিকা
-                  </h3>
-                  <span className="text-sm font-bold text-[#101C32]/60">
-                    মোট: {toBengaliDigits(bookings.length)}টি রেকর্ড
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-xl font-extrabold text-[#101C32]">
+                      বুকিং ও বরাদ্দকৃত প্রপার্টির তালিকা
+                    </h3>
+                    <p className="text-xs text-[#101C32]/65">
+                      যেকোনো বরাদ্দকৃত প্রপার্টি বা প্রকল্পের পূর্ণাঙ্গ তফসিল ও মানি রিসিট ভিউ করুন
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('সকল প্রকল্প ও প্রপার্টি')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#101C32] text-[#FDE68A] text-xs font-extrabold cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      সকল প্রকল্প ও প্রপার্টি তালিকা দেখুন
+                    </button>
+                  </div>
                 </div>
 
                 {bookings.length === 0 ? (
@@ -743,45 +767,48 @@ export const CustomerPortalView: React.FC<{
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-base">
                       <thead>
-                        <tr className="border-b border-[#101C32]/10 text-[#101C32]/65 font-bold">
+                        <tr className="border-b border-[#101C32]/10 text-[#101C32]/65 font-bold text-sm">
                           <th className="py-3.5 px-3">বুকিং নম্বর</th>
-                          <th className="py-3.5 px-3">প্রপার্টি</th>
+                          <th className="py-3.5 px-3">প্রপার্টি ও প্রকল্প</th>
                           <th className="py-3.5 px-3">পেমেন্ট প্ল্যান</th>
                           <th className="py-3.5 px-3 text-right">মোট মূল্য</th>
                           <th className="py-3.5 px-3 text-right">পরিশোধিত</th>
                           <th className="py-3.5 px-3 text-right">বকেয়া</th>
                           <th className="py-3.5 px-3">স্ট্যাটাস</th>
+                          <th className="py-3.5 px-3 text-right no-print">প্রকল্প / প্রপার্টি ভিউ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#101C32]/10">
                         {bookings.map((b) => {
-                          const prop = properties.find((p) => p.id === b.propertyId);
+                          const prop = properties.find((p) => p.id === b.propertyId) || properties[0];
+                          const proj =
+                            projects.find((pr) => pr.id === prop?.projectId) || projects[0];
                           return (
                             <tr key={b.id} className="hover:bg-[#F8F6F0]/60">
-                              <td className="py-4 px-3 font-mono font-bold text-[#101C32]">
+                              <td className="py-4 px-3 font-mono font-bold text-[#101C32] text-sm">
                                 {b.bookingNumber}
                               </td>
                               <td className="py-4 px-3">
                                 <p className="font-extrabold text-[#101C32]">
                                   {prop?.titleBn || `প্রপার্টি আইডি #${b.propertyId}`}
                                 </p>
-                                <p className="text-sm text-[#101C32]/65">
-                                  {prop?.propertyCode} · {prop?.sizeBn}
+                                <p className="text-xs text-[#101C32]/65">
+                                  {prop?.propertyCode} · {prop?.sizeBn} · {prop?.areaBn}
                                 </p>
                               </td>
-                              <td className="py-4 px-3 font-semibold">{b.paymentPlanChoice}</td>
-                              <td className="py-4 px-3 text-right font-bold tabular-nums-bn">
+                              <td className="py-4 px-3 font-semibold text-sm">{b.paymentPlanChoice}</td>
+                              <td className="py-4 px-3 text-right font-bold tabular-nums-bn text-sm">
                                 {formatExactBdtBengali(b.totalPriceBdt)}
                               </td>
-                              <td className="py-4 px-3 text-right font-bold text-emerald-700 tabular-nums-bn">
+                              <td className="py-4 px-3 text-right font-bold text-emerald-700 tabular-nums-bn text-sm">
                                 {formatExactBdtBengali(b.paidAmountBdt)}
                               </td>
-                              <td className="py-4 px-3 text-right font-bold text-amber-700 tabular-nums-bn">
+                              <td className="py-4 px-3 text-right font-bold text-amber-700 tabular-nums-bn text-sm">
                                 {formatExactBdtBengali(b.dueAmountBdt)}
                               </td>
                               <td className="py-4 px-3">
                                 <span
-                                  className={`px-3 py-1 rounded-md text-sm font-bold ${
+                                  className={`px-3 py-1 rounded-md text-xs font-bold ${
                                     b.statusBn === 'অনুমোদিত'
                                       ? 'bg-emerald-100 text-emerald-900'
                                       : b.statusBn === 'বাতিল'
@@ -791,6 +818,34 @@ export const CustomerPortalView: React.FC<{
                                 >
                                   {b.statusBn}
                                 </span>
+                              </td>
+                              <td className="py-4 px-3 text-right no-print">
+                                <div className="inline-flex items-center gap-1.5">
+                                  {prop && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setViewerTarget({ type: 'property', property: prop })
+                                      }
+                                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      প্রপার্টি ভিউ
+                                    </button>
+                                  )}
+                                  {proj && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setViewerTarget({ type: 'project', project: proj })
+                                      }
+                                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#101C32] hover:bg-slate-800 text-[#FDE68A] text-xs font-extrabold cursor-pointer"
+                                    >
+                                      <Building2 className="w-3.5 h-3.5" />
+                                      প্রকল্প ভিউ
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           );
@@ -802,7 +857,282 @@ export const CustomerPortalView: React.FC<{
               </div>
             )}
 
-             {(activeTab === 'ড্যাশবোর্ড' ||
+            {/* ALL PROJECTS & PROPERTIES DIRECTORY + VIEWER IN PORTAL */}
+            {(activeTab === 'সকল প্রকল্প ও প্রপার্টি' ||
+              activeTab === 'আমার প্রপার্টি' ||
+              activeTab === 'প্রজেক্ট আপডেট' ||
+              activeTab === 'ড্যাশবোর্ড') && (
+              <div className="bg-white rounded-2xl p-6 border border-[#101C32]/10 shadow-sm space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                  <div>
+                    <span className="text-xs font-extrabold text-emerald-700 uppercase">
+                      H &amp; H Homes প্রজেক্ট ও প্রপার্টি ডিরেক্টরি
+                    </span>
+                    <h3 className="text-xl font-extrabold text-[#101C32]">
+                      সকল প্রকল্প ও প্রপার্টি তালিকা এবং বিস্তারিত ভিউ
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Search Input */}
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        value={portalSearchQuery}
+                        onChange={(e) => setPortalSearchQuery(e.target.value)}
+                        placeholder="প্রকল্প বা লোকেশন খুঁজুন..."
+                        className="pl-9 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold focus:outline-none focus:border-emerald-600"
+                      />
+                    </div>
+
+                    {/* Status Filter */}
+                    <select
+                      value={portalStatusFilter}
+                      onChange={(e) => setPortalStatusFilter(e.target.value)}
+                      aria-label="প্রকল্প স্ট্যাটাস ফিল্টার"
+                      className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-slate-50"
+                    >
+                      <option value="সকল">সকল স্ট্যাটাস</option>
+                      <option value="চলমান">চলমান প্রকল্প</option>
+                      <option value="আসন্ন">আসন্ন প্রকল্প</option>
+                      <option value="সম্পন্ন">সম্পন্ন প্রকল্প</option>
+                    </select>
+
+                    {/* List vs Grid Toggle */}
+                    <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                      <button
+                        type="button"
+                        onClick={() => setPortalViewMode('list')}
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-extrabold cursor-pointer ${
+                          portalViewMode === 'list'
+                            ? 'bg-[#101C32] text-[#FDE68A]'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <List className="w-3.5 h-3.5" />
+                        তালিকা ভিউ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPortalViewMode('grid')}
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-extrabold cursor-pointer ${
+                          portalViewMode === 'grid'
+                            ? 'bg-[#101C32] text-[#FDE68A]'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                        কার্ড ভিউ
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Projects Section (List or Grid) */}
+                {(() => {
+                  const filteredProj = projects.filter((proj) => {
+                    const matchStatus =
+                      portalStatusFilter === 'সকল' || proj.statusBn === portalStatusFilter;
+                    const q = portalSearchQuery.trim().toLowerCase();
+                    const matchQuery =
+                      !q ||
+                      proj.nameBn.toLowerCase().includes(q) ||
+                      proj.locationBn.toLowerCase().includes(q) ||
+                      proj.areaBn.toLowerCase().includes(q) ||
+                      proj.categoryBn.toLowerCase().includes(q);
+                    return matchStatus && matchQuery;
+                  });
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-base font-extrabold text-[#101C32]">
+                          ১. মাস্টার প্রকল্পের তালিকা ({toBengaliDigits(filteredProj.length)}টি প্রকল্প)
+                        </h4>
+                        <span className="text-xs text-emerald-700 font-bold">
+                          বসুন্ধরা আবাসিক জমি ও বনশ্রী অ্যাপার্টমেন্ট প্রকল্প
+                        </span>
+                      </div>
+
+                      {portalViewMode === 'list' ? (
+                        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                          <table className="w-full text-left border-collapse text-sm">
+                            <thead>
+                              <tr className="bg-[#101C32] text-white">
+                                <th className="py-3 px-4 font-bold">প্রকল্পের নাম</th>
+                                <th className="py-3 px-4 font-bold">ধরন ও স্ট্যাটাস</th>
+                                <th className="py-3 px-4 font-bold">অবস্থান (এলাকা)</th>
+                                <th className="py-3 px-4 font-bold">আকার ও মূল্য</th>
+                                <th className="py-3 px-4 font-bold text-right">বিস্তারিত ভিউ</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {filteredProj.map((proj) => (
+                                <tr key={proj.id} className="hover:bg-slate-50">
+                                  <td className="py-3.5 px-4 font-extrabold text-[#101C32]">
+                                    {proj.nameBn}
+                                  </td>
+                                  <td className="py-3.5 px-4">
+                                    <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-800 text-xs font-bold mr-1.5">
+                                      {proj.categoryBn}
+                                    </span>
+                                    <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 text-xs font-extrabold">
+                                      {proj.statusBn}
+                                    </span>
+                                  </td>
+                                  <td className="py-3.5 px-4 text-xs sm:text-sm text-slate-700 font-semibold">
+                                    {proj.locationBn} ({proj.areaBn})
+                                  </td>
+                                  <td className="py-3.5 px-4 text-xs sm:text-sm">
+                                    <span className="font-bold block text-[#101C32]">
+                                      {proj.sizeSummaryBn}
+                                    </span>
+                                    <span className="text-emerald-700 font-bold">
+                                      {proj.priceSummaryBn}
+                                    </span>
+                                  </td>
+                                  <td className="py-3.5 px-4 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setViewerTarget({ type: 'project', project: proj })
+                                      }
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-colors cursor-pointer"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      প্রকল্প ভিউ করুন
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          {filteredProj.map((proj) => (
+                            <div
+                              key={proj.id}
+                              className="rounded-2xl border border-[#101C32]/15 overflow-hidden bg-[#F8F6F0] flex flex-col justify-between"
+                            >
+                              <div>
+                                <div className="h-44">
+                                  <ArchitecturalRender
+                                    theme={proj.imageType}
+                                    label={proj.statusBn}
+                                  />
+                                </div>
+                                <div className="p-5 space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <h4 className="font-extrabold text-lg text-[#101C32]">
+                                      {proj.nameBn}
+                                    </h4>
+                                    <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#101C32] text-[#FDE68A]">
+                                      {proj.statusBn}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs font-bold text-emerald-700">
+                                    {proj.categoryBn} · {proj.locationBn}
+                                  </p>
+                                  <p className="text-sm text-[#101C32]/80 line-clamp-2">
+                                    {proj.descriptionBn}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="px-5 pb-5 pt-2 flex items-center justify-between border-t border-slate-200/80">
+                                <span className="text-xs font-extrabold text-[#101C32]">
+                                  {proj.priceSummaryBn}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setViewerTarget({ type: 'project', project: proj })
+                                  }
+                                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  প্রকল্প বিস্তারিত ভিউ
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Properties Inventory List in Portal */}
+                {(() => {
+                  const q = portalSearchQuery.trim().toLowerCase();
+                  const filteredProps = properties.filter(
+                    (pr) =>
+                      !q ||
+                      pr.titleBn.toLowerCase().includes(q) ||
+                      pr.propertyCode.toLowerCase().includes(q) ||
+                      pr.locationBn.toLowerCase().includes(q) ||
+                      pr.areaBn.toLowerCase().includes(q)
+                  );
+
+                  return (
+                    <div className="space-y-3 pt-4 border-t border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-base font-extrabold text-[#101C32]">
+                          ২. বসুন্ধরা প্লট ও বনশ্রী অ্যাপার্টমেন্ট ইউনিট তালিকা ({toBengaliDigits(filteredProps.length)}টি প্রপার্টি)
+                        </h4>
+                      </div>
+
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-slate-100 text-[#101C32] border-b border-slate-200">
+                              <th className="py-3 px-4 font-bold">কোড</th>
+                              <th className="py-3 px-4 font-bold">প্রপার্টি শিরোনাম</th>
+                              <th className="py-3 px-4 font-bold">লোকেশন ও আকার</th>
+                              <th className="py-3 px-4 font-bold text-right">নির্ধারিত মূল্য</th>
+                              <th className="py-3 px-4 font-bold text-right">বিস্তারিত ভিউ</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {filteredProps.map((prop) => (
+                              <tr key={prop.id} className="hover:bg-slate-50">
+                                <td className="py-3 px-4 font-mono font-extrabold text-emerald-700 text-xs">
+                                  {prop.propertyCode}
+                                </td>
+                                <td className="py-3 px-4 font-extrabold text-[#101C32]">
+                                  {prop.titleBn}
+                                </td>
+                                <td className="py-3 px-4 text-xs sm:text-sm text-slate-600">
+                                  {prop.locationBn} · <strong>{prop.sizeBn}</strong>
+                                </td>
+                                <td className="py-3 px-4 text-right font-extrabold text-[#101C32]">
+                                  {prop.priceDisplayBn}
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setViewerTarget({ type: 'property', property: prop })
+                                    }
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#101C32] hover:bg-emerald-700 text-[#FDE68A] hover:text-white text-xs font-extrabold transition-colors cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    ইউনিট ভিউ
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {(activeTab === 'ড্যাশবোর্ড' ||
               activeTab === 'পেমেন্ট' ||
               activeTab === 'কিস্তির বিবরণ' ||
               activeTab === 'রিসিট') && (
@@ -953,33 +1283,6 @@ export const CustomerPortalView: React.FC<{
               </div>
             )}
 
-            {activeTab === 'প্রজেক্ট আপডেট' && (
-              <div className="bg-white rounded-2xl p-6 border border-[#101C32]/10 shadow-sm space-y-5">
-                <h3 className="text-xl font-extrabold text-[#101C32]">
-                  চলমান প্রজেক্টের ৩ডি ও প্রকৌশল উন্নয়ন আপডেট
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {projects.map((proj) => (
-                    <div key={proj.id} className="rounded-xl border border-[#101C32]/10 overflow-hidden bg-[#F8F6F0]">
-                      <div className="h-44">
-                        <ArchitecturalRender theme={proj.imageType} label={proj.statusBn} />
-                      </div>
-                      <div className="p-5 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-extrabold text-lg text-[#101C32]">{proj.nameBn}</h4>
-                          <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-[#101C32] text-[#FDE68A]">
-                            {proj.statusBn}
-                          </span>
-                        </div>
-                        <p className="text-sm text-[#101C32]/70">{proj.locationBn}</p>
-                        <p className="text-sm text-[#101C32]/85">{proj.descriptionBn}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {activeTab === 'অভিযোগ' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <form
@@ -1095,6 +1398,20 @@ export const CustomerPortalView: React.FC<{
         <MoneyReceiptModal
           receipt={selectedReceipt}
           onClose={() => setSelectedReceipt(null)}
+        />
+
+        <ProjectPropertyViewerModal
+          target={viewerTarget}
+          allProjects={projects}
+          allProperties={properties}
+          onSelectTarget={(next) => setViewerTarget(next)}
+          onClose={() => setViewerTarget(null)}
+          contextLabelBn="গ্রাহক পোর্টাল · প্রকল্প ও প্রপার্টি ভিউ"
+          onActionClick={() => {
+            setViewerTarget(null);
+            onBrowseProperties();
+          }}
+          actionButtonLabelBn="নতুন প্রপার্টি বুকিং করুন"
         />
       </main>
     </div>

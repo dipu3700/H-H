@@ -44,7 +44,7 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: '5mb' }));
 
@@ -504,6 +504,17 @@ async function startServer() {
     } catch (error: any) {
       console.error('Error in PUT /api/admin/slides/:id:', error);
       res.status(500).json({ error: 'স্লাইড আপডেট করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  app.delete('/api/admin/slides/:id', async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      await db.delete(heroSlides).where(eq(heroSlides.id, id));
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error('Error in DELETE /api/admin/slides/:id:', error);
+      res.status(500).json({ error: 'স্লাইড মুছতে সমস্যা হয়েছে।' });
     }
   });
 

@@ -29,6 +29,9 @@ import {
   Calendar,
   ArrowRight,
   Layers,
+  Handshake,
+  Compass,
+  Landmark,
 } from 'lucide-react';
 import {
   SiteSettings,
@@ -48,7 +51,7 @@ import {
   calculateInstallmentPlan,
 } from './utils/bengaliLogic';
 import {
-  NazihaLogo,
+  HHLogo,
   ArchitecturalRender,
   ExecutivePortrait,
   REAL_ESTATE_PHOTO_COLLECTION,
@@ -90,6 +93,7 @@ export type PublicPage =
   | 'service-emi'
   | 'service-booking'
   | 'service-legal'
+  | 'service-jv'
   // Contact Page
   | 'contact';
 
@@ -240,6 +244,11 @@ const NAVIGATION_MENU: NavMenuItem[] = [
         label: 'দলিল ও নামজারি সহায়তা',
         desc: 'আইনগত যাচাই, রেজিস্ট্রেশন ও নামজারি সেবা',
       },
+      {
+        id: 'service-jv',
+        label: 'যৌথ উদ্যোগ (Landowner JV)',
+        desc: 'জমিওয়ালাদের সাথে যৌথ উদ্যোগে আধুনিক ভবন নির্মাণ',
+      },
     ],
   },
   {
@@ -271,6 +280,9 @@ export default function App() {
   // Hero Slider State
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
+  // Homepage Project Showcase Filter Tab
+  const [homeProjectTab, setHomeProjectTab] = useState<'all' | 'চলমান' | 'আসন্ন' | 'সম্পন্ন'>('all');
+
   // Customer Auth State
   const [customerUser, setCustomerUser] = useState<CustomerUser | null>(null);
 
@@ -284,7 +296,7 @@ export default function App() {
   const [photoFilter, setPhotoFilter] = useState<'all' | 'land' | 'building'>('all');
   const [lightboxPhoto, setLightboxPhoto] = useState<PhotoCollectionItem | null>(null);
 
-  // EMI Calculator State (for service-emi page)
+  // EMI Calculator State
   const [emiPriceBdt, setEmiPriceBdt] = useState<number>(4500000);
   const [emiBookingBdt, setEmiBookingBdt] = useState<number>(500000);
   const [emiPlanChoice, setEmiPlanChoice] = useState<string>('৩৬ মাসিক কিস্তি');
@@ -295,7 +307,7 @@ export default function App() {
   const [brochureOpen, setBrochureOpen] = useState(false);
   const [brochureProject, setBrochureProject] = useState<ProjectItem | null>(null);
 
-  // Contact Form State
+  // Contact / Landowner JV Form State
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -325,6 +337,16 @@ export default function App() {
   useEffect(() => {
     fetchBootstrapData();
   }, []);
+
+  // Ensure document title & favicon always reflect H & H Homes
+  useEffect(() => {
+    document.title =
+      settings?.seoTitle || 'H & H Homes | এইচ অ্যান্ড এইচ হোমস — বনশ্রী, ঢাকা';
+    const existingIcon = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
+    if (existingIcon) {
+      existingIcon.href = '/favicon.svg?v=hh2026';
+    }
+  }, [settings?.seoTitle]);
 
   // Support URL hash for direct navigation (#admin, #portal)
   useEffect(() => {
@@ -407,6 +429,11 @@ export default function App() {
   const ongoingProjects = projects.filter((p) => p.statusBn === 'চলমান');
   const upcomingProjects = projects.filter((p) => p.statusBn === 'আসন্ন');
   const completedProjects = projects.filter((p) => p.statusBn === 'সম্পন্ন');
+
+  const homeFilteredProjects =
+    homeProjectTab === 'all'
+      ? projects
+      : projects.filter((p) => p.statusBn === homeProjectTab);
 
   const chairmanMember =
     boardMembers.find((b) => b.roleKey === 'chairman') || boardMembers[0] || null;
@@ -645,7 +672,7 @@ export default function App() {
             onClick={() => navigateToPage('home')}
             className="focus:outline-none cursor-pointer text-left shrink-0"
           >
-            <NazihaLogo variant="dark" />
+            <HHLogo variant="dark" />
           </button>
 
           {/* Desktop Multi-Page & Sub-Page Dropdown Navigation */}
@@ -834,14 +861,14 @@ export default function App() {
 
       {/* =========================================================
           PAGE 1: HOME PAGE (হোম)
-          Banner has ONLY Photo + Project Name.
-          Search button says ONLY "খুঁজুন" (no numbers in parentheses).
+          Inspired by premier Bangladeshi real estate developers (Shanta, Sheltech, bti, Assure Group).
+          Hero Banner strictly shows ONLY Project Photo + Project Name.
          ========================================================= */}
       {publicPage === 'home' && (
         <main className="flex-1">
           {/* Hero Banner — ONLY Project Photo and Project Name */}
           <section className="relative bg-[#0B192C] overflow-hidden">
-            <div className="relative h-[380px] sm:h-[460px] lg:h-[520px] w-full">
+            <div className="relative h-[400px] sm:h-[480px] lg:h-[540px] w-full">
               <ArchitecturalRender
                 theme={activeSlide.visualTheme}
                 hideBadge={true}
@@ -849,7 +876,7 @@ export default function App() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#07111E]/90 via-[#07111E]/25 to-transparent" />
 
               {/* Project Name Only */}
-              <div className="absolute bottom-8 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-4">
+              <div className="absolute bottom-10 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-4">
                 <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-md">
                   {activeSlide.titleBn}
                 </h1>
@@ -884,9 +911,9 @@ export default function App() {
             </div>
           </section>
 
-          {/* Clean Search Filter Bar — No result count in button */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-7 relative z-20">
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-5">
+          {/* Floating Smart Property Finder Bar */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 sm:p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">
@@ -969,40 +996,187 @@ export default function App() {
             </div>
           </section>
 
-          {/* Featured Projects Overview */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-            <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
-              <div>
-                <span className="text-xs font-bold uppercase text-emerald-700">
-                  H &amp; H Homes প্রকল্পসমূহ
-                </span>
-                <h2 className="text-2xl font-extrabold text-[#0F172A] mt-0.5">
-                  আমাদের উল্লেখযোগ্য প্রকল্পসমূহ
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigateToPage('projects-all')}
-                className="text-sm font-extrabold text-emerald-700 hover:text-emerald-800 cursor-pointer"
-              >
-                সকল প্রকল্প দেখুন →
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projects.slice(0, 4).map(renderProjectCard)}
+          {/* Corporate At-A-Glance Metrics Ribbon (Inspired by Sheltech & bti) */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  metric: '১২+ বছর',
+                  title: 'আবাসন ও ল্যান্ড ব্যাংকিং অভিজ্ঞতা',
+                  sub: 'আস্থা ও স্বচ্ছতার শীর্ষে',
+                },
+                {
+                  metric: '১০০% নিষ্কণ্টক',
+                  title: 'দলিল ও নামজারি নিশ্চয়তা',
+                  sub: 'সিএস, আরএস ও খতিয়ান যাচাইকৃত',
+                },
+                {
+                  metric: 'বসুন্ধরা ও বনশ্রী',
+                  title: 'প্রাইম ডেভেলপমেন্ট জোন',
+                  sub: 'ঢাকার সেরা আবাসিক লোকেশন',
+                },
+                {
+                  metric: 'BNBC কোড',
+                  title: 'ভূমিকম্প-সহনীয় স্থাপত্য',
+                  sub: 'আধুনিক প্রকৌশল ও গুণগত মান',
+                },
+              ].map((stat) => (
+                <div
+                  key={stat.metric}
+                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between"
+                >
+                  <span className="text-xl sm:text-2xl font-extrabold text-emerald-700">
+                    {stat.metric}
+                  </span>
+                  <div className="mt-2">
+                    <h3 className="text-sm font-extrabold text-[#0F172A]">{stat.title}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">{stat.sub}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Featured Properties Grid */}
-          <section id="featured-properties" className="bg-white border-t border-slate-200 py-12">
+          {/* Interactive Signature Projects Showcase (Inspired by Shanta Holdings & Assure Group) */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                  সিগনেচার ডেভেলপমেন্ট · {companyName}
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] mt-1">
+                  আমাদের প্রকল্পসমূহ
+                </h2>
+              </div>
+
+              {/* Project Status Tabs on Homepage */}
+              <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                {(
+                  [
+                    { id: 'all', label: 'সকল প্রকল্প' },
+                    { id: 'চলমান', label: 'চলমান' },
+                    { id: 'আসন্ন', label: 'আসন্ন' },
+                    { id: 'সম্পন্ন', label: 'সম্পন্ন' },
+                  ] as { id: 'all' | 'চলমান' | 'আসন্ন' | 'সম্পন্ন'; label: string }[]
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setHomeProjectTab(tab.id)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      homeProjectTab === tab.id
+                        ? 'bg-[#0B192C] text-white'
+                        : 'text-slate-700 hover:text-[#0F172A]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {homeFilteredProjects.map(renderProjectCard)}
+            </div>
+          </section>
+
+          {/* Prime Location Zones Spotlight (Bashundhara Land Plots vs Banasree Apartments) */}
+          <section className="bg-[#0B192C] text-white py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    প্রাইম লোকেশন জোন
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+                    বসুন্ধরায় আবাসিক প্লট ও বনশ্রীতে আধুনিক অ্যাপার্টমেন্ট
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigateToPage('projects-map')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-bold text-emerald-300 cursor-pointer self-start sm:self-auto"
+                >
+                  <Compass className="w-4 h-4" />
+                  <span>লোকেশন ম্যাপে দেখুন</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Zone 1: Bashundhara Land Zone */}
+                <div className="rounded-2xl bg-white/5 border border-white/15 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                  <div className="space-y-3">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 inline-block">
+                      ল্যান্ড ও প্লট জোন · বসুন্ধরা আবাসিক এলাকা, ঢাকা
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+                      বসুন্ধরা আবাসিক এলাকায় নিষ্কণ্টক রেডি প্লট
+                    </h3>
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      বসুন্ধরা আবাসিক এলাকার ব্লক-আই, ব্লক-এম ও মেইন অ্যাভিনিউতে ৪০ ও ৬০ ফুট প্রশস্ত সড়ক সংলগ্ন ৩, ৫ ও ১০ কাঠার প্রস্তুত আবাসিক ও বাণিজ্যিক প্লট। এককালীন ও সহজ কিস্তিতে রেজিস্ট্রেশন সুবিধা।
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('properties-residential-land')}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      আবাসিক প্লট দেখুন
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('properties-commercial-land')}
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      বাণিজ্যিক প্লট দেখুন
+                    </button>
+                  </div>
+                </div>
+
+                {/* Zone 2: Banasree Apartment & Head Office Zone */}
+                <div className="rounded-2xl bg-white/5 border border-white/15 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                  <div className="space-y-3">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 inline-block">
+                      অ্যাপার্টমেন্ট ও হেড অফিস জোন · রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+                      বনশ্রীতে লাক্সারি ফ্ল্যাট, পেন্টহাউস ও কমার্শিয়াল স্পেস
+                    </h3>
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      বনশ্রী ব্লক-সি, রোড-৪ এ আমাদের প্রধান কার্যালয় ও সিগনেচার আবাসিক ভবনসমূহে ১৭৫০ থেকে ২৮৫০ বর্গফুটের আধুনিক ৩ ও ৪ বেডরুমের অ্যাপার্টমেন্ট, ডুপ্লেক্স পেন্টহাউস ও বাণিজ্যিক ফ্লোর।
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('properties-apartments')}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      ফ্ল্যাট ও অ্যাপার্টমেন্ট দেখুন
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateToPage('contact')}
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      বনশ্রী অফিসের ঠিকানা
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Featured Properties Inventory Grid */}
+          <section id="featured-properties" className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
               <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
                   <span className="text-xs font-bold uppercase text-emerald-700">
-                    প্লট ও অ্যাপার্টমেন্ট
+                    প্লট ও অ্যাপার্টমেন্ট ইনভেন্টরি
                   </span>
-                  <h2 className="text-2xl font-extrabold text-[#0F172A] mt-0.5">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] mt-0.5">
                     নির্বাচিত প্রপার্টি সমূহ
                   </h2>
                 </div>
@@ -1018,7 +1192,7 @@ export default function App() {
               {loading ? (
                 <div className="p-10 text-center text-slate-500 font-bold">লোড হচ্ছে...</div>
               ) : filteredProperties.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center text-slate-600 font-semibold">
+                <div className="p-8 rounded-2xl bg-white border border-slate-200 text-center text-slate-600 font-semibold">
                   এই ফিল্টারে কোনো প্রপার্টি পাওয়া যায়নি।
                 </div>
               ) : (
@@ -1026,6 +1200,58 @@ export default function App() {
                   {filteredProperties.map(renderPropertyCard)}
                 </div>
               )}
+            </div>
+          </section>
+
+          {/* Landowner Joint Venture & Architectural Excellence Section (Inspired by bti & Sheltech) */}
+          <section className="bg-white border-t border-slate-200 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-7 space-y-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                  যৌথ উদ্যোগে ভবন নির্মাণ · Landowner Joint Venture
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A]">
+                  আপনার মূল্যবান জমিতে আধুনিক ভবন নির্মাণে H &amp; H Homes আপনার বিশ্বস্ত অংশীদার
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                  বনশ্রী, বসুন্ধরা, আফতাবনগর, উত্তরা বা ঢাকার প্রাইম আবাসিক এলাকায় আপনার জমিতে রাজউক অনুমোদিত আধুনিক বহুতল ভবন নির্মাণের জন্য আমাদের অভিজ্ঞ প্রকৌশলী ও স্থাপত্য টিমের সাথে যৌথ উদ্যোগে (Joint Venture) যুক্ত হোন।
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => navigateToPage('service-jv')}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0B192C] hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+                  >
+                    <Handshake className="w-4 h-4 text-emerald-400" />
+                    <span>জয়েন্ট ভেঞ্চার প্রস্তাব পাঠান</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateToPage('service-emi')}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-[#0F172A] text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+                  >
+                    <Calculator className="w-4 h-4 text-emerald-700" />
+                    <span>কিস্তি ক্যালকুলেটর</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <Landmark className="w-7 h-7 text-emerald-600" />
+                  <h3 className="font-extrabold text-sm text-[#0F172A]">রাজউক প্ল্যান ও অনুমোদন</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    অভিজ্ঞ স্থপতি ও স্ট্রাকচারাল ইঞ্জিনিয়ার দ্বারা সর্বোচ্চ ফ্লোর এরিয়া রেশিও (FAR) অনুযায়ী নকশা অনুমোদন।
+                  </p>
+                </div>
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <ShieldCheck className="w-7 h-7 text-emerald-600" />
+                  <h3 className="font-extrabold text-sm text-[#0F172A]">নির্ধারিত সময়ে হস্তান্তর</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    উন্নত মানের নির্মাণ সামগ্রী এবং চুক্তিবদ্ধ সময়ের মধ্যে জমির মালিকের অংশ বুঝিয়ে দেওয়ার নিশ্চয়তা।
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
         </main>
@@ -1626,7 +1852,8 @@ export default function App() {
          ========================================================= */}
       {(publicPage === 'service-emi' ||
         publicPage === 'service-booking' ||
-        publicPage === 'service-legal') && (
+        publicPage === 'service-legal' ||
+        publicPage === 'service-jv') && (
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full space-y-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -1638,6 +1865,8 @@ export default function App() {
                   ? 'কিস্তি ও ডাউন পেমেন্ট ক্যালকুলেটর'
                   : publicPage === 'service-booking'
                   ? 'অনলাইন বুকিং ও বরাদ্দ প্রক্রিয়া'
+                  : publicPage === 'service-jv'
+                  ? 'জমিওয়ালাদের সাথে যৌথ উদ্যোগ (Landowner Joint Venture)'
                   : 'দলিল রেজিস্ট্রেশন ও নামজারি সহায়তা'}
               </h1>
             </div>
@@ -1648,6 +1877,7 @@ export default function App() {
                   { id: 'service-emi', label: 'কিস্তি ক্যালকুলেটর' },
                   { id: 'service-booking', label: 'বুকিং ও বরাদ্দ প্রক্রিয়া' },
                   { id: 'service-legal', label: 'দলিল ও নামজারি সেবা' },
+                  { id: 'service-jv', label: 'যৌথ উদ্যোগ (JV)' },
                 ] as { id: PublicPage; label: string }[]
               ).map((tab) => (
                 <button
@@ -1879,6 +2109,100 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {publicPage === 'service-jv' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-5 bg-[#0B192C] text-white rounded-2xl p-6 sm:p-8 space-y-5">
+                <Handshake className="w-10 h-10 text-emerald-400" />
+                <h2 className="text-xl sm:text-2xl font-extrabold">
+                  জমির মালিকদের জন্য যৌথ উদ্যোগ (Joint Venture) সুবিধা
+                </h2>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  বনশ্রী, বসুন্ধরা, আফতাবনগর ও ঢাকার প্রাইম আবাসিক এলাকায় আপনার নিষ্কণ্টক জমিতে আধুনিক অ্যাপার্টমেন্ট বা কমার্শিয়াল ভবন নির্মাণের জন্য H &amp; H Homes দিচ্ছে সর্বোচ্চ শেয়ারিং অনুপাত ও সাইনিং মানি সুবিধা।
+                </p>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-200">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>রাজউক (RAJUK) অনুমোদন ও আর্কিটেকচারাল ডিজাইন</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>১০০% বিএনবিসি বিল্ডিং কোড ও প্রথম শ্রেণির নির্মাণ সামগ্রী</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>চুক্তিবদ্ধ সময়ের মধ্যে ভবন হস্তান্তর গ্যারান্টি</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-slate-200">
+                <h3 className="text-xl font-extrabold text-[#0F172A] mb-4">
+                  জমির বিবরণ পাঠান (Landowner JV Proposal)
+                </h3>
+                {contactStatus && (
+                  <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold">
+                    {contactStatus}
+                  </div>
+                )}
+                <form
+                  onSubmit={(e) => {
+                    setContactCategory('যৌথ উদ্যোগ (Landowner JV)');
+                    handleContactSubmit(e);
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        জমির মালিকের নাম *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                        placeholder="পূর্ণ নাম"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        মোবাইল নম্বর *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="০১৭XXXXXXXX"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      জমির লোকেশন, আয়তন (কাঠা) ও সম্মুখ সড়কের বিবরণ *
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      placeholder="যেমন: বনশ্রী ব্লক-সি / বসুন্ধরা, জমির পরিমাণ ৫ কাঠা, সম্মুখ সড়ক ৩০ ফুট..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-colors cursor-pointer"
+                  >
+                    প্রস্তাব পাঠান
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </main>
       )}
 
@@ -2003,6 +2327,7 @@ export default function App() {
                       <option value="আবাসিক জমি">আবাসিক প্লট</option>
                       <option value="ফ্ল্যাট">ফ্ল্যাট ও অ্যাপার্টমেন্ট</option>
                       <option value="বাণিজ্যিক স্পেস">বাণিজ্যিক প্লট / অফিস স্পেস</option>
+                      <option value="যৌথ উদ্যোগ (Landowner JV)">যৌথ উদ্যোগ (Landowner JV)</option>
                     </select>
                   </div>
                 </div>
@@ -2036,7 +2361,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-3">
-              <NazihaLogo variant="light" />
+              <HHLogo variant="light" />
               <p className="text-xs text-slate-400 leading-relaxed">
                 প্রধান কার্যালয়: {officeAddress}
               </p>
@@ -2153,10 +2478,10 @@ export default function App() {
                 <li>
                   <button
                     type="button"
-                    onClick={() => navigateToPage('service-legal')}
+                    onClick={() => navigateToPage('service-jv')}
                     className="hover:text-white cursor-pointer"
                   >
-                    দলিল ও নামজারি সহায়তা
+                    যৌথ উদ্যোগ (Landowner JV)
                   </button>
                 </li>
                 <li>

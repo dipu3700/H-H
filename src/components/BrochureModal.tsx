@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Printer, Download, MapPin, Phone, Mail, CheckCircle2 } from 'lucide-react';
 import { ProjectItem, PropertyItem, SiteSettings } from '../types';
-import { NazihaLogo, ArchitecturalRender, BlueprintDiagram } from './ArchitecturalVisuals';
+import { HHLogo, ArchitecturalRender, BlueprintDiagram } from './ArchitecturalVisuals';
 import { toBengaliDigits } from '../utils/bengaliLogic';
 
 export const BrochureModal: React.FC<{
@@ -95,7 +95,7 @@ export const BrochureModal: React.FC<{
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border border-slate-200 shadow-2xl">
         {/* Top Action Bar */}
         <div className="sticky top-0 z-20 bg-[#0B192C] text-white px-6 py-4 flex items-center justify-between border-b border-slate-700 no-print">
-          <NazihaLogo variant="light" />
+          <HHLogo variant="light" />
           <div className="flex items-center gap-3">
             <button
               type="button"

@@ -27,6 +27,10 @@ import {
   Download,
   Edit3,
   Save,
+  Search,
+  List,
+  LayoutGrid,
+  Terminal,
 } from 'lucide-react';
 import {
   SiteSettings,
@@ -50,6 +54,7 @@ import {
 } from '../utils/bengaliLogic';
 import { ArchitecturalRender, ExecutivePortrait } from './ArchitecturalVisuals';
 import { MoneyReceiptModal, MoneyReceiptData } from './MoneyReceiptModal';
+import { ProjectPropertyViewerModal, ViewerTarget } from './ProjectPropertyViewerModal';
 
 export type AdminSystemMode = 'realestate_erp' | 'website_cms';
 
@@ -97,6 +102,10 @@ export const AdminCmsView: React.FC<{
 
   // Official Money Receipt Modal State
   const [activeReceipt, setActiveReceipt] = useState<MoneyReceiptData | null>(null);
+  // Project / Property Detail Viewer Modal State
+  const [adminViewerTarget, setAdminViewerTarget] = useState<ViewerTarget | null>(null);
+  const [adminSearchQuery, setAdminSearchQuery] = useState<string>('');
+  const [adminListMode, setAdminListMode] = useState<'list' | 'grid'>('list');
 
   // New Money Receipt Form State
   const [mrBookingId, setMrBookingId] = useState<string>('');
@@ -758,7 +767,42 @@ export const AdminCmsView: React.FC<{
             <div className="bg-white p-12 rounded-2xl text-center font-bold text-base">
               সিস্টেম ডাটাবেস লোড হচ্ছে...
             </div>
-          ) : systemMode === 'realestate_erp' ? (
+          ) : (
+            <div className="bg-white p-4 rounded-2xl border border-[#0B162C]/15 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span className="text-xs sm:text-sm font-extrabold text-[#0B162C]">
+                  দ্রুত প্রকল্প ভিউ ({toBengaliDigits(projects.length)}টি প্রকল্প · {toBengaliDigits(properties.length)}টি প্রপার্টি):
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {projects.slice(0, 4).map((proj) => (
+                  <button
+                    key={proj.id}
+                    type="button"
+                    onClick={() => setAdminViewerTarget({ type: 'project', project: proj })}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#0B162C] text-[#0B162C] hover:text-[#FDE68A] text-xs font-extrabold transition-colors cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{proj.nameBn}</span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSystemMode('realestate_erp');
+                    setErpTab('মাস্টার প্রজেক্ট এন্ট্রি');
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>সকল প্রকল্প তালিকা</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading ? null : systemMode === 'realestate_erp' ? (
             <>
               {/* TAB 1: MONEY RECEIPT & INSTALLMENT COLLECTION */}
               {erpTab === 'মানি রিসিট ও কিস্তি আদায়' && (
@@ -1192,7 +1236,7 @@ export const AdminCmsView: React.FC<{
               {erpTab === 'বুকিং অনুমোদন ও কিস্তি' && (
                 <div className="bg-white rounded-2xl p-6 border border-[#0B162C]/15 shadow-sm space-y-4">
                   <h3 className="text-lg font-extrabold text-[#0B162C]">
-                    গ্রাহক প্রপার্টি বুকিং অনুমোদন ও মানি রিসিট ({toBengaliDigits(bookings.length)})
+                    গ্রাহক প্রপার্টি বুকিং অনুমোদন, প্রজেক্ট ভিউ ও মানি রিসিট ({toBengaliDigits(bookings.length)})
                   </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-sm">
@@ -1200,66 +1244,94 @@ export const AdminCmsView: React.FC<{
                         <tr className="border-b border-[#0B162C]/10 text-[#0B162C]/65 font-bold">
                           <th className="py-3 px-3">বুকিং নম্বর</th>
                           <th className="py-3 px-3">গ্রাহকের নাম ও ফোন</th>
+                          <th className="py-3 px-3">বরাদ্দকৃত প্রপার্টি</th>
                           <th className="py-3 px-3">মূল্য ও প্ল্যান</th>
                           <th className="py-3 px-3">স্ট্যাটাস</th>
-                          <th className="py-3 px-3 text-right">সিদ্ধান্ত ও মানি রিসিট</th>
+                          <th className="py-3 px-3 text-right">সিদ্ধান্ত, ভিউ ও মানি রিসিট</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#0B162C]/10">
-                        {bookings.map((b) => (
-                          <tr key={b.id}>
-                            <td className="py-3.5 px-3 font-mono font-bold">{b.bookingNumber}</td>
-                            <td className="py-3.5 px-3">
-                              <p className="font-bold">{b.customerName}</p>
-                              <p className="text-xs text-[#0B162C]/65">{b.customerPhone}</p>
-                            </td>
-                            <td className="py-3.5 px-3">
-                              <p className="font-bold">{formatExactBdtBengali(b.totalPriceBdt)}</p>
-                              <p className="text-xs text-[#0B162C]/65">{b.paymentPlanChoice}</p>
-                            </td>
-                            <td className="py-3.5 px-3">
-                              <span
-                                className={`px-2.5 py-1 rounded text-xs font-bold ${
-                                  b.statusBn === 'অনুমোদিত'
-                                    ? 'bg-emerald-100 text-emerald-900'
-                                    : b.statusBn === 'বাতিল'
-                                    ? 'bg-red-100 text-red-900'
-                                    : 'bg-amber-100 text-amber-900'
-                                }`}
-                              >
-                                {b.statusBn}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-3 text-right space-x-2">
-                              <button
-                                type="button"
-                                onClick={() => openReceiptForBooking(b)}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B162C] text-[#FDE68A] text-xs font-bold hover:bg-emerald-700 hover:text-white cursor-pointer"
-                              >
-                                <Receipt className="w-3.5 h-3.5" />
-                                বুকিং রিসিট
-                              </button>
-                              {b.statusBn !== 'অনুমোদিত' && (
-                                <button
-                                  onClick={() => handleBookingDecision(b.id, 'approve')}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                        {bookings.map((b) => {
+                          const bookedProp =
+                            properties.find((p) => p.id === b.propertyId) || properties[0];
+                          return (
+                            <tr key={b.id}>
+                              <td className="py-3.5 px-3 font-mono font-bold">{b.bookingNumber}</td>
+                              <td className="py-3.5 px-3">
+                                <p className="font-bold">{b.customerName}</p>
+                                <p className="text-xs text-[#0B162C]/65">{b.customerPhone}</p>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <p className="font-extrabold text-[#0B162C]">
+                                  {bookedProp?.titleBn || `প্রপার্টি #${b.propertyId}`}
+                                </p>
+                                <p className="text-xs text-emerald-700 font-bold">
+                                  {bookedProp?.propertyCode} · {bookedProp?.sizeBn}
+                                </p>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <p className="font-bold">{formatExactBdtBengali(b.totalPriceBdt)}</p>
+                                <p className="text-xs text-[#0B162C]/65">{b.paymentPlanChoice}</p>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <span
+                                  className={`px-2.5 py-1 rounded text-xs font-bold ${
+                                    b.statusBn === 'অনুমোদিত'
+                                      ? 'bg-emerald-100 text-emerald-900'
+                                      : b.statusBn === 'বাতিল'
+                                      ? 'bg-red-100 text-red-900'
+                                      : 'bg-amber-100 text-amber-900'
+                                  }`}
                                 >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  অনুমোদন
-                                </button>
-                              )}
-                              {b.statusBn !== 'বাতিল' && (
+                                  {b.statusBn}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-3 text-right space-x-1.5">
+                                {bookedProp && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setAdminViewerTarget({
+                                        type: 'property',
+                                        property: bookedProp,
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#0B162C] text-xs font-extrabold cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    প্রপার্টি ভিউ
+                                  </button>
+                                )}
                                 <button
-                                  onClick={() => handleBookingDecision(b.id, 'cancel')}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-bold hover:bg-red-100 cursor-pointer"
+                                  type="button"
+                                  onClick={() => openReceiptForBooking(b)}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B162C] text-[#FDE68A] text-xs font-bold hover:bg-emerald-700 hover:text-white cursor-pointer"
                                 >
-                                  <XCircle className="w-3.5 h-3.5" />
-                                  বাতিল
+                                  <Receipt className="w-3.5 h-3.5" />
+                                  বুকিং রিসিট
                                 </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                                {b.statusBn !== 'অনুমোদিত' && (
+                                  <button
+                                    onClick={() => handleBookingDecision(b.id, 'approve')}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    অনুমোদন
+                                  </button>
+                                )}
+                                {b.statusBn !== 'বাতিল' && (
+                                  <button
+                                    onClick={() => handleBookingDecision(b.id, 'cancel')}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-bold hover:bg-red-100 cursor-pointer"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5" />
+                                    বাতিল
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1352,35 +1424,161 @@ export const AdminCmsView: React.FC<{
                     </button>
                   </form>
 
-                  <div className="bg-white rounded-2xl p-6 border border-[#0B162C]/15 shadow-sm space-y-3">
-                    <h4 className="font-extrabold text-base">
-                      সিস্টেমে নিবন্ধিত সকল প্রজেক্ট ({toBengaliDigits(projects.length)})
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {projects.map((p) => (
-                        <div
-                          key={p.id}
-                          className="p-4 rounded-xl bg-[#F8F6F0] border border-[#0B162C]/10 flex items-center justify-between gap-4"
-                        >
-                          <div>
-                            <p className="font-extrabold text-sm">{p.nameBn}</p>
-                            <p className="text-xs text-[#0B162C]/65">
-                              {p.categoryBn} · {p.locationBn}
-                            </p>
-                          </div>
+                  <div className="bg-white rounded-2xl p-6 border border-[#0B162C]/15 shadow-sm space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h4 className="font-extrabold text-base text-[#0B162C]">
+                        সিস্টেমে নিবন্ধিত সকল প্রজেক্ট তালিকা ও বিস্তারিত ভিউ ({toBengaliDigits(projects.length)})
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                          <input
+                            type="text"
+                            value={adminSearchQuery}
+                            onChange={(e) => setAdminSearchQuery(e.target.value)}
+                            placeholder="প্রকল্প খুঁজুন..."
+                            className="pl-9 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold"
+                          />
+                        </div>
+                        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
                           <button
-                            onClick={() => handleToggleWebVisibility('project', p.id, p.publishedOnWeb)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer ${
-                              p.publishedOnWeb === 1
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-gray-300 text-gray-800'
+                            type="button"
+                            onClick={() => setAdminListMode('list')}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold cursor-pointer ${
+                              adminListMode === 'list'
+                                ? 'bg-[#0B162C] text-[#FDE68A]'
+                                : 'text-slate-600'
                             }`}
                           >
-                            {p.publishedOnWeb === 1 ? 'ওয়েবসাইটে লাইভ' : 'লুকানো'}
+                            <List className="w-3.5 h-3.5" />
+                            তালিকা
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAdminListMode('grid')}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold cursor-pointer ${
+                              adminListMode === 'grid'
+                                ? 'bg-[#0B162C] text-[#FDE68A]'
+                                : 'text-slate-600'
+                            }`}
+                          >
+                            <LayoutGrid className="w-3.5 h-3.5" />
+                            কার্ড
                           </button>
                         </div>
-                      ))}
+                      </div>
                     </div>
+
+                    {adminListMode === 'list' ? (
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-[#0B162C] text-white">
+                              <th className="py-3 px-4 font-bold">প্রকল্পের নাম</th>
+                              <th className="py-3 px-4 font-bold">ধরন ও স্ট্যাটাস</th>
+                              <th className="py-3 px-4 font-bold">অবস্থান</th>
+                              <th className="py-3 px-4 font-bold">বাজেট / মূল্য</th>
+                              <th className="py-3 px-4 font-bold text-right">প্রকল্প ভিউ ও কন্ট্রোল</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {projects
+                              .filter(
+                                (p) =>
+                                  !adminSearchQuery.trim() ||
+                                  p.nameBn.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
+                                  p.locationBn.toLowerCase().includes(adminSearchQuery.toLowerCase())
+                              )
+                              .map((p) => (
+                                <tr key={p.id} className="hover:bg-slate-50">
+                                  <td className="py-3.5 px-4 font-extrabold text-[#0B162C]">
+                                    {p.nameBn}
+                                  </td>
+                                  <td className="py-3.5 px-4">
+                                    <span className="px-2 py-0.5 rounded bg-slate-100 text-xs font-bold mr-1">
+                                      {p.categoryBn}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 text-xs font-extrabold">
+                                      {p.statusBn}
+                                    </span>
+                                  </td>
+                                  <td className="py-3.5 px-4 text-xs text-slate-600">
+                                    {p.locationBn} ({p.areaBn})
+                                  </td>
+                                  <td className="py-3.5 px-4 text-xs font-bold text-[#0B162C]">
+                                    {p.priceSummaryBn}
+                                  </td>
+                                  <td className="py-3.5 px-4 text-right space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setAdminViewerTarget({ type: 'project', project: p })
+                                      }
+                                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B162C] hover:bg-emerald-700 text-[#FDE68A] hover:text-white text-xs font-extrabold cursor-pointer"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      প্রকল্প ভিউ
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleToggleWebVisibility('project', p.id, p.publishedOnWeb)
+                                      }
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer ${
+                                        p.publishedOnWeb === 1
+                                          ? 'bg-emerald-600 text-white'
+                                          : 'bg-gray-300 text-gray-800'
+                                      }`}
+                                    >
+                                      {p.publishedOnWeb === 1 ? 'ওয়েবসাইটে লাইভ' : 'লুকানো'}
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {projects.map((p) => (
+                          <div
+                            key={p.id}
+                            className="p-4 rounded-xl bg-[#F8F6F0] border border-[#0B162C]/10 flex items-center justify-between gap-4"
+                          >
+                            <div>
+                              <p className="font-extrabold text-sm">{p.nameBn}</p>
+                              <p className="text-xs text-[#0B162C]/65">
+                                {p.categoryBn} · {p.locationBn}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAdminViewerTarget({ type: 'project', project: p })
+                                }
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B162C] text-[#FDE68A] text-xs font-extrabold cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                ভিউ
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleToggleWebVisibility('project', p.id, p.publishedOnWeb)
+                                }
+                                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer ${
+                                  p.publishedOnWeb === 1
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-gray-300 text-gray-800'
+                                }`}
+                              >
+                                {p.publishedOnWeb === 1 ? 'ওয়েবসাইটে লাইভ' : 'লুকানো'}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1510,10 +1708,10 @@ export const AdminCmsView: React.FC<{
                     </button>
                   </form>
 
-                  {/* Property List with Inline Edit */}
+                  {/* Property List with Inline Edit & Detail View */}
                   <div className="bg-white rounded-2xl p-6 border border-[#0B162C]/15 shadow-sm space-y-4">
                     <h4 className="font-extrabold text-base">
-                      সকল জমি ও ফ্ল্যাট তালিকা এবং সরাসরি এডিট ({toBengaliDigits(properties.length)})
+                      সকল জমি ও ফ্ল্যাট তালিকা, বিস্তারিত ভিউ এবং সরাসরি এডিট ({toBengaliDigits(properties.length)})
                     </h4>
                     <div className="space-y-3">
                       {properties.map((prop) => (
@@ -1555,6 +1753,16 @@ export const AdminCmsView: React.FC<{
                           )}
 
                           <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAdminViewerTarget({ type: 'property', property: prop })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B162C] text-[#FDE68A] text-xs font-extrabold cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              বিস্তারিত ভিউ
+                            </button>
                             {editingPropId === prop.id ? (
                               <button
                                 type="button"
@@ -1697,7 +1905,7 @@ export const AdminCmsView: React.FC<{
                 <div className="space-y-6">
                   <div className="bg-white p-6 rounded-2xl border border-[#0B162C]/15 shadow-sm space-y-4">
                     <h4 className="text-lg font-extrabold text-[#0B162C]">
-                      ১. প্রজেক্ট সিলেকশন ({toBengaliDigits(projects.filter((p) => p.publishedOnWeb === 1).length)}/{toBengaliDigits(projects.length)}টি ওয়েবসাইটে প্রদর্শিত)
+                      ১. প্রজেক্ট সিলেকশন ও ভিউ ({toBengaliDigits(projects.filter((p) => p.publishedOnWeb === 1).length)}/{toBengaliDigits(projects.length)}টি ওয়েবসাইটে প্রদর্শিত)
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {projects.map((p) => (
@@ -1715,24 +1923,36 @@ export const AdminCmsView: React.FC<{
                               {p.categoryBn} · {p.locationBn}
                             </p>
                           </div>
-                          <button
-                            onClick={() => handleToggleWebVisibility('project', p.id, p.publishedOnWeb)}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-extrabold text-xs cursor-pointer ${
-                              p.publishedOnWeb === 1
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-[#0B162C] text-[#FDE68A]'
-                            }`}
-                          >
-                            {p.publishedOnWeb === 1 ? (
-                              <>
-                                <Eye className="w-3.5 h-3.5" /> লাইভ
-                              </>
-                            ) : (
-                              <>
-                                <EyeOff className="w-3.5 h-3.5" /> সিলেক্ট করুন
-                              </>
-                            )}
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAdminViewerTarget({ type: 'project', project: p })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-[#0B162C] font-extrabold text-xs cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              ভিউ
+                            </button>
+                            <button
+                              onClick={() => handleToggleWebVisibility('project', p.id, p.publishedOnWeb)}
+                              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-extrabold text-xs cursor-pointer ${
+                                p.publishedOnWeb === 1
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-[#0B162C] text-[#FDE68A]'
+                              }`}
+                            >
+                              {p.publishedOnWeb === 1 ? (
+                                <>
+                                  <Eye className="w-3.5 h-3.5" /> লাইভ
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5" /> সিলেক্ট করুন
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1740,7 +1960,7 @@ export const AdminCmsView: React.FC<{
 
                   <div className="bg-white p-6 rounded-2xl border border-[#0B162C]/15 shadow-sm space-y-4">
                     <h4 className="text-lg font-extrabold text-[#0B162C]">
-                      ২. বসুন্ধরা জমি ও বনশ্রী ফ্ল্যাট সিলেকশন ({toBengaliDigits(properties.filter((p) => p.publishedOnWeb === 1).length)}/{toBengaliDigits(properties.length)}টি ওয়েবসাইটে প্রদর্শিত)
+                      ২. বসুন্ধরা জমি ও বনশ্রী ফ্ল্যাট সিলেকশন ও ভিউ ({toBengaliDigits(properties.filter((p) => p.publishedOnWeb === 1).length)}/{toBengaliDigits(properties.length)}টি ওয়েবসাইটে প্রদর্শিত)
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {properties.map((prop) => (
@@ -1761,16 +1981,28 @@ export const AdminCmsView: React.FC<{
                               {prop.sizeBn} · {prop.priceDisplayBn}
                             </p>
                           </div>
-                          <button
-                            onClick={() => handleToggleWebVisibility('property', prop.id, prop.publishedOnWeb)}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-extrabold text-xs cursor-pointer shrink-0 ${
-                              prop.publishedOnWeb === 1
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-[#0B162C] text-[#FDE68A]'
-                            }`}
-                          >
-                            {prop.publishedOnWeb === 1 ? 'লাইভ' : 'সিলেক্ট করুন'}
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAdminViewerTarget({ type: 'property', property: prop })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-[#0B162C] font-extrabold text-xs cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              ভিউ
+                            </button>
+                            <button
+                              onClick={() => handleToggleWebVisibility('property', prop.id, prop.publishedOnWeb)}
+                              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-extrabold text-xs cursor-pointer shrink-0 ${
+                                prop.publishedOnWeb === 1
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-[#0B162C] text-[#FDE68A]'
+                              }`}
+                            >
+                              {prop.publishedOnWeb === 1 ? 'লাইভ' : 'সিলেক্ট করুন'}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
