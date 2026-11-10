@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --navy-deep: #0B162C;
+    --navy-royal: #172A45;
+    --gold-champagne: #C6A15B;
+    --gold-bright: #F59E0B;
+    --emerald-royal: #059669;
+    --ivory-warm: #F8F6F0;
+    --gray-soft: #F2F4F7;
+  }
+
+  html {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+    scroll-behavior: smooth;
+    background-color: #F8F6F0;
+    color: #0B162C;
+    font-size: 17.5px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+    line-height: 1.75;
+    overflow-x: hidden;
+    font-size: 1.05rem;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+  }
+}
+
+.font-bengali {
+  font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+}
+
+.tabular-nums-bn {
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+}

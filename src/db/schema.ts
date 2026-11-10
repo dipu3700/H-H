@@ -1,0 +1,248 @@
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  uid: text('uid').notNull().unique(),
+  email: text('email').notNull(),
+  name: text('name').default('গ্রাহক'),
+  phone: text('phone').default(''),
+  passwordHash: text('password_hash').default(''),
+  nidNumber: text('nid_number').default(''),
+  addressBn: text('address_bn').default(''),
+  role: text('role').notNull().default('customer'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const siteSettings = pgTable('site_settings', {
+  id: serial('id').primaryKey(),
+  companyNameBn: text('company_name_bn').notNull(),
+  companyNameEn: text('company_name_en').notNull(),
+  taglineBn: text('tagline_bn').notNull(),
+  taglineAltBn: text('tagline_alt_bn').notNull(),
+  taglineEn: text('tagline_en').notNull(),
+  heroHeadlineBn: text('hero_headline_bn').notNull(),
+  heroSubtitleBn: text('hero_subtitle_bn').notNull(),
+  aboutIntroBn: text('about_intro_bn').notNull(),
+  missionBn: text('mission_bn').notNull(),
+  visionBn: text('vision_bn').notNull(),
+  coreValuesBn: text('core_values_bn').notNull(),
+  officeAddressBn: text('office_address_bn').notNull(),
+  phone: text('phone').notNull(),
+  whatsapp: text('whatsapp').notNull(),
+  email: text('email').notNull(),
+  officeHoursBn: text('office_hours_bn').notNull(),
+  seoTitle: text('seo_title').notNull(),
+  seoDescription: text('seo_description').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const heroSlides = pgTable('hero_slides', {
+  id: serial('id').primaryKey(),
+  badgeBn: text('badge_bn').notNull(),
+  titleBn: text('title_bn').notNull(),
+  subtitleBn: text('subtitle_bn').notNull(),
+  highlightStatsBn: text('highlight_stats_bn').notNull(),
+  ctaPrimaryBn: text('cta_primary_bn').notNull(),
+  ctaSecondaryBn: text('cta_secondary_bn').notNull(),
+  visualTheme: text('visual_theme').notNull(),
+  projectSlug: text('project_slug').default(''),
+  accentColor: text('accent_color').default('#C6A15B'),
+  displayOrder: integer('display_order').notNull().default(1),
+  publishedOnWeb: integer('published_on_web').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const boardMembers = pgTable('board_members', {
+  id: serial('id').primaryKey(),
+  nameBn: text('name_bn').notNull(),
+  designationBn: text('designation_bn').notNull(),
+  roleKey: text('role_key').notNull().default('director'),
+  qualificationBn: text('qualification_bn').notNull(),
+  experienceBn: text('experience_bn').notNull(),
+  messageBn: text('message_bn').notNull(),
+  quoteBn: text('quote_bn').notNull(),
+  email: text('email').default(''),
+  phone: text('phone').default(''),
+  portraitTheme: text('portrait_theme').notNull(),
+  displayOrder: integer('display_order').notNull().default(1),
+  publishedOnWeb: integer('published_on_web').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const projects = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  nameBn: text('name_bn').notNull(),
+  nameEn: text('name_en').notNull(),
+  categoryBn: text('category_bn').notNull(),
+  statusBn: text('status_bn').notNull(),
+  areaBn: text('area_bn').notNull(),
+  locationBn: text('location_bn').notNull(),
+  sizeSummaryBn: text('size_summary_bn').notNull(),
+  priceSummaryBn: text('price_summary_bn').notNull(),
+  availabilityBn: text('availability_bn').notNull(),
+  descriptionBn: text('description_bn').notNull(),
+  specificationsJson: text('specifications_json').notNull(),
+  lat: text('lat').notNull(),
+  lng: text('lng').notNull(),
+  imageType: text('image_type').notNull(),
+  featured: integer('featured').notNull().default(1),
+  publishedOnWeb: integer('published_on_web').notNull().default(1),
+  totalBudgetBdt: integer('total_budget_bdt').notNull().default(50000000),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const properties = pgTable('properties', {
+  id: serial('id').primaryKey(),
+  propertyCode: text('property_code').notNull().unique(),
+  projectId: integer('project_id').references(() => projects.id),
+  titleBn: text('title_bn').notNull(),
+  titleEn: text('title_en').notNull(),
+  categoryBn: text('category_bn').notNull(),
+  propertyType: text('property_type').notNull(),
+  areaBn: text('area_bn').notNull(),
+  locationBn: text('location_bn').notNull(),
+  blockNo: text('block_no').default(''),
+  plotNo: text('plot_no').default(''),
+  sizeBn: text('size_bn').notNull(),
+  bedrooms: integer('bedrooms').default(0),
+  bathrooms: integer('bathrooms').default(0),
+  sqft: integer('sqft').default(0),
+  priceBdt: integer('price_bdt').notNull(),
+  priceDisplayBn: text('price_display_bn').notNull(),
+  bookingAmountBdt: integer('booking_amount_bdt').notNull(),
+  bookingDisplayBn: text('booking_display_bn').notNull(),
+  paymentPlanBn: text('payment_plan_bn').notNull(),
+  statusBn: text('status_bn').notNull(),
+  descriptionBn: text('description_bn').notNull(),
+  floorPlanSpecs: text('floor_plan_specs').notNull(),
+  lat: text('lat').notNull(),
+  lng: text('lng').notNull(),
+  imageType: text('image_type').notNull(),
+  publishedOnWeb: integer('published_on_web').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const bookings = pgTable('bookings', {
+  id: serial('id').primaryKey(),
+  bookingNumber: text('booking_number').notNull().unique(),
+  propertyId: integer('property_id').references(() => properties.id).notNull(),
+  userUid: text('user_uid').notNull(),
+  customerName: text('customer_name').notNull(),
+  customerPhone: text('customer_phone').notNull(),
+  customerEmail: text('customer_email').notNull(),
+  nidNumber: text('nid_number').notNull(),
+  addressBn: text('address_bn').notNull(),
+  paymentPlanChoice: text('payment_plan_choice').notNull(),
+  totalPriceBdt: integer('total_price_bdt').notNull(),
+  bookingMoneyBdt: integer('booking_money_bdt').notNull(),
+  paidAmountBdt: integer('paid_amount_bdt').notNull(),
+  dueAmountBdt: integer('due_amount_bdt').notNull(),
+  nextInstallmentDate: text('next_installment_date').notNull(),
+  statusBn: text('status_bn').notNull(),
+  notesBn: text('notes_bn').default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const payments = pgTable('payments', {
+  id: serial('id').primaryKey(),
+  receiptNumber: text('receipt_number').notNull().unique(),
+  bookingId: integer('booking_id').references(() => bookings.id).notNull(),
+  userUid: text('user_uid').notNull(),
+  installmentNo: integer('installment_no').notNull(),
+  titleBn: text('title_bn').notNull(),
+  amountBdt: integer('amount_bdt').notNull(),
+  dueDate: text('due_date').notNull(),
+  paidDate: text('paid_date').default(''),
+  paymentMethodBn: text('payment_method_bn').notNull(),
+  statusBn: text('status_bn').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const erpTransactions = pgTable('erp_transactions', {
+  id: serial('id').primaryKey(),
+  voucherNo: text('voucher_no').notNull().unique(),
+  transactionDate: text('transaction_date').notNull(),
+  type: text('type').notNull(), // 'income' | 'expense'
+  categoryBn: text('category_bn').notNull(),
+  projectId: integer('project_id').default(0),
+  projectNameBn: text('project_name_bn').default('সাধারণ কর্পোরেট হিসাব'),
+  titleBn: text('title_bn').notNull(),
+  amountBdt: integer('amount_bdt').notNull(),
+  paymentMethodBn: text('payment_method_bn').notNull(),
+  referenceNo: text('reference_no').default(''),
+  recordedByBn: text('recorded_by_bn').default('প্রধান হিসাবরক্ষক'),
+  notesBn: text('notes_bn').default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const inquiries = pgTable('inquiries', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  phone: text('phone').notNull(),
+  email: text('email').notNull(),
+  propertyCategoryBn: text('property_category_bn').notNull(),
+  propertyId: integer('property_id').default(0),
+  message: text('message').notNull(),
+  statusBn: text('status_bn').notNull().default('নতুন'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const complaints = pgTable('complaints', {
+  id: serial('id').primaryKey(),
+  userUid: text('user_uid').notNull(),
+  customerName: text('customer_name').notNull(),
+  subjectBn: text('subject_bn').notNull(),
+  messageBn: text('message_bn').notNull(),
+  statusBn: text('status_bn').notNull().default('প্রক্রিয়াধীন'),
+  resolutionBn: text('resolution_bn').default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const notifications = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  userUid: text('user_uid').notNull(),
+  titleBn: text('title_bn').notNull(),
+  messageBn: text('message_bn').notNull(),
+  isRead: integer('is_read').notNull().default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const galleryItems = pgTable('gallery_items', {
+  id: serial('id').primaryKey(),
+  titleBn: text('title_bn').notNull(),
+  categoryBn: text('category_bn').notNull(),
+  mediaType: text('media_type').notNull(), // 'image' | 'video'
+  visualTheme: text('visual_theme').notNull(),
+  captionBn: text('caption_bn').notNull(),
+  durationBn: text('duration_bn').default('০৩:২০ মিনিট'),
+  publishedOnWeb: integer('published_on_web').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const testimonials = pgTable('testimonials', {
+  id: serial('id').primaryKey(),
+  customerNameBn: text('customer_name_bn').notNull(),
+  roleOrProfessionBn: text('role_or_profession_bn').notNull(),
+  projectNameBn: text('project_name_bn').notNull(),
+  propertyUnitBn: text('property_unit_bn').default('প্লট-১২, ব্লক-এ'),
+  reviewBn: text('review_bn').notNull(),
+  rating: integer('rating').notNull(),
+  isVideoReview: integer('is_video_review').notNull().default(1),
+  videoDurationBn: text('video_duration_bn').default('০২:৪৫ মিনিট'),
+  videoTheme: text('video_theme').default('customer_video_1'),
+  approved: integer('approved').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const articles = pgTable('articles', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  titleBn: text('title_bn').notNull(),
+  categoryBn: text('category_bn').notNull(),
+  publishedDateBn: text('published_date_bn').notNull(),
+  summaryBn: text('summary_bn').notNull(),
+  contentBn: text('content_bn').notNull(),
+  visualTheme: text('visual_theme').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
