@@ -291,3 +291,214 @@ export function formatReceiptAmountInWordsBn(amountBdt: number): string {
   return `${parts.join(' ')} টাকা মাত্র`;
 }
 
+export interface AccountBalanceSummary {
+  totalLiquidityBdt: number;
+  cashTotalBdt: number;
+  bankTotalBdt: number;
+  mfsTotalBdt: number;
+}
+
+export function calculateAccountsLiquiditySummary(
+  accounts: Array<{ accountType: string; currentBalanceBdt: number }>
+): AccountBalanceSummary {
+  let cashTotalBdt = 0;
+  let bankTotalBdt = 0;
+  let mfsTotalBdt = 0;
+
+  for (const acc of accounts) {
+    const bal = Number(acc.currentBalanceBdt || 0);
+    if (acc.accountType === 'cash') cashTotalBdt += bal;
+    else if (acc.accountType === 'mfs') mfsTotalBdt += bal;
+    else bankTotalBdt += bal;
+  }
+
+  return {
+    totalLiquidityBdt: cashTotalBdt + bankTotalBdt + mfsTotalBdt,
+    cashTotalBdt,
+    bankTotalBdt,
+    mfsTotalBdt,
+  };
+}
+
+export interface ProjectCostBreakdownItem {
+  projectId: number;
+  projectNameBn: string;
+  budgetBdt: number;
+  incomeBdt: number;
+  directCostBdt: number;
+  overheadCostBdt: number;
+  totalExpenseBdt: number;
+  netProfitBdt: number;
+  budgetUtilizationPct: number;
+}
+
+export function calculateProjectCostBreakdown(
+  projectsList: Array<{ id: number; nameBn: string; totalBudgetBdt: number }>,
+  transactions: Array<{
+    type: string;
+    projectId?: number;
+    projectNameBn?: string;
+    costCenterBn?: string;
+    categoryBn?: string;
+    amountBdt: number;
+  }>
+): ProjectCostBreakdownItem[] {
+  return projectsList.map((proj) => {
+    let incomeBdt = 0;
+    let directCostBdt = 0;
+    let overheadCostBdt = 0;
+
+    for (const tx of transactions) {
+      const matchesProject =
+        Number(tx.projectId || 0) === proj.id ||
+        (tx.projectNameBn || '').trim() === proj.nameBn.trim();
+      if (!matchesProject) continue;
+
+      const amt = Number(tx.amountBdt || 0);
+      if (tx.type === 'income') {
+        incomeBdt += amt;
+      } else if (tx.type === 'expense') {
+        const cc = `${tx.costCenterBn || ''} ${tx.categoryBn || ''}`;
+        if (
+          cc.includes('বেতন') ||
+          cc.includes('অফিস') ||
+          cc.includes('প্রশাসনিক') ||
+          cc.includes('লভ্যাংশ')
+        ) {
+          overheadCostBdt += amt;
+        } else {
+          directCostBdt += amt;
+        }
+      }
+    }
+
+    const totalExpenseBdt = directCostBdt + overheadCostBdt;
+    const budgetBdt = Number(proj.totalBudgetBdt || 0);
+    const budgetUtilizationPct =
+      budgetBdt > 0 ? Math.min(100, Math.round((totalExpenseBdt / budgetBdt) * 100)) : 0;
+
+    return {
+      projectId: proj.id,
+      projectNameBn: proj.nameBn,
+      budgetBdt,
+      incomeBdt,
+      directCostBdt,
+      overheadCostBdt,
+      totalExpenseBdt,
+      netProfitBdt: incomeBdt - totalExpenseBdt,
+      budgetUtilizationPct,
+    };
+  });
+}
+
+export interface ShareAllocationRow {
+  shareholderId: number;
+  nameBn: string;
+  sharePercent: number;
+  dividendAmountBdt: number;
+  totalShares: number;
+}
+
+export interface ShareDistributionCalculation {
+  totalProfitBdt: number;
+  allocatedPercent: number;
+  totalAllocatedDividendBdt: number;
+  unallocatedProfitBdt: number;
+  allocations: ShareAllocationRow[];
+}
+
+export function calculateShareDistribution(
+  totalProfitBdt: number,
+  shareholdersList: Array<{
+    id: number;
+    nameBn: string;
+    totalShares: number;
+    sharePercent: number;
+    statusBn?: string;
+  }>
+): ShareDistributionCalculation {
+  const cleanProfit = Math.max(0, Math.round(Number(totalProfitBdt || 0)));
+  const activeHolders = shareholdersList.filter((s) => s.statusBn !== 'নিষ্ক্রিয়');
+
+  let allocatedPercent = 0;
+  let totalAllocatedDividendBdt = 0;
+
+  const allocations: ShareAllocationRow[] = activeHolders.map((holder) => {
+    const pct = Math.max(0, Number(holder.sharePercent || 0));
+    allocatedPercent += pct;
+    const dividendAmountBdt = Math.round((cleanProfit * pct) / 100);
+    totalAllocatedDividendBdt += dividendAmountBdt;
+    return {
+      shareholderId: holder.id,
+      nameBn: holder.nameBn,
+      sharePercent: pct,
+      dividendAmountBdt,
+      totalShares: Number(holder.totalShares || 0),
+    };
+  });
+
+  return {
+    totalProfitBdt: cleanProfit,
+    allocatedPercent: Math.round(allocatedPercent * 100) / 100,
+    totalAllocatedDividendBdt,
+    unallocatedProfitBdt: Math.max(0, cleanProfit - totalAllocatedDividendBdt),
+    allocations,
+  };
+}
+
+export interface PayrollSummaryResult {
+  activeStaffCount: number;
+  totalBasicSalaryBdt: number;
+  totalAllowanceBdt: number;
+  totalDeductionBdt: number;
+  totalNetPayableBdt: number;
+  byDepartment: Record<string, { count: number; netPayableBdt: number }>;
+}
+
+export function calculateMonthlyPayrollSummary(
+  staffList: Array<{
+    id: number;
+    departmentBn: string;
+    basicSalaryBdt: number;
+    allowanceBdt: number;
+    statusBn?: string;
+  }>,
+  deductionByStaffId: Record<number, number> = {}
+): PayrollSummaryResult {
+  let activeStaffCount = 0;
+  let totalBasicSalaryBdt = 0;
+  let totalAllowanceBdt = 0;
+  let totalDeductionBdt = 0;
+  const byDepartment: Record<string, { count: number; netPayableBdt: number }> = {};
+
+  for (const st of staffList) {
+    if (st.statusBn === 'অব্যাহতিপ্রাপ্ত') continue;
+    activeStaffCount += 1;
+    const basic = Math.max(0, Number(st.basicSalaryBdt || 0));
+    const allow = Math.max(0, Number(st.allowanceBdt || 0));
+    const ded = Math.max(0, Number(deductionByStaffId[st.id] || 0));
+    const net = Math.max(0, basic + allow - ded);
+
+    totalBasicSalaryBdt += basic;
+    totalAllowanceBdt += allow;
+    totalDeductionBdt += ded;
+
+    const dept = st.departmentBn || 'সাধারণ বিভাগ';
+    if (!byDepartment[dept]) {
+      byDepartment[dept] = { count: 0, netPayableBdt: 0 };
+    }
+    byDepartment[dept].count += 1;
+    byDepartment[dept].netPayableBdt += net;
+  }
+
+  return {
+    activeStaffCount,
+    totalBasicSalaryBdt,
+    totalAllowanceBdt,
+    totalDeductionBdt,
+    totalNetPayableBdt: Math.max(0, totalBasicSalaryBdt + totalAllowanceBdt - totalDeductionBdt),
+    byDepartment,
+  };
+}
+
+

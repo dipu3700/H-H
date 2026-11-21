@@ -157,6 +157,8 @@ export interface ErpTransactionItem {
   transactionDate: string;
   type: 'income' | 'expense' | string;
   categoryBn: string;
+  costCenterBn?: string;
+  accountId?: number;
   projectId: number;
   projectNameBn: string;
   titleBn: string;
@@ -166,6 +168,103 @@ export interface ErpTransactionItem {
   recordedByBn: string;
   notesBn: string;
   createdAt: string;
+}
+
+export interface FinancialAccountItem {
+  id: number;
+  accountCode: string;
+  accountNameBn: string;
+  accountType: 'cash' | 'bank' | 'mfs' | string;
+  bankNameBn: string;
+  accountNumber: string;
+  branchBn: string;
+  openingBalanceBdt: number;
+  currentBalanceBdt: number;
+  statusBn: string;
+  createdAt?: string;
+}
+
+export interface StaffMemberItem {
+  id: number;
+  employeeCode: string;
+  nameBn: string;
+  designationBn: string;
+  departmentBn: string;
+  phone: string;
+  email: string;
+  joiningDate: string;
+  basicSalaryBdt: number;
+  allowanceBdt: number;
+  bankAccountBn: string;
+  attendanceStatusBn: string;
+  statusBn: string;
+  createdAt?: string;
+}
+
+export interface SalaryPaymentItem {
+  id: number;
+  slipNumber: string;
+  staffId: number;
+  staffNameBn: string;
+  departmentBn: string;
+  salaryMonth: string;
+  basicSalaryBdt: number;
+  allowanceBdt: number;
+  deductionBdt: number;
+  netSalaryBdt: number;
+  accountId: number;
+  paymentMethodBn: string;
+  paidDate: string;
+  statusBn: string;
+  createdAt?: string;
+}
+
+export interface ShareholderItem {
+  id: number;
+  shareholderCode: string;
+  nameBn: string;
+  designationOrRoleBn: string;
+  phone: string;
+  email: string;
+  nidNumber: string;
+  totalShares: number;
+  sharePercent: number;
+  committedCapitalBdt: number;
+  paidCapitalBdt: number;
+  totalDividendReceivedBdt: number;
+  projectScopeBn: string;
+  statusBn: string;
+  createdAt?: string;
+}
+
+export interface ShareDistributionItem {
+  id: number;
+  distributionCode: string;
+  titleBn: string;
+  periodBn: string;
+  projectNameBn: string;
+  totalProfitBdt: number;
+  shareholderId: number;
+  shareholderNameBn: string;
+  sharePercent: number;
+  dividendAmountBdt: number;
+  accountId: number;
+  paymentMethodBn: string;
+  distributedDate: string;
+  statusBn: string;
+  createdAt?: string;
+}
+
+export type PortalRoleKey = 'accounts' | 'staff' | 'shareholder' | 'admin';
+
+export interface RoleSessionUser {
+  role: PortalRoleKey;
+  id: number;
+  code: string;
+  nameBn: string;
+  designationBn: string;
+  email: string;
+  phone: string;
 }
 
 export interface InquiryItem {

@@ -165,6 +165,8 @@ export const erpTransactions = pgTable('erp_transactions', {
   transactionDate: text('transaction_date').notNull(),
   type: text('type').notNull(), // 'income' | 'expense'
   categoryBn: text('category_bn').notNull(),
+  costCenterBn: text('cost_center_bn').default('সাধারণ'),
+  accountId: integer('account_id').default(0),
   projectId: integer('project_id').default(0),
   projectNameBn: text('project_name_bn').default('সাধারণ কর্পোরেট হিসাব'),
   titleBn: text('title_bn').notNull(),
@@ -173,6 +175,93 @@ export const erpTransactions = pgTable('erp_transactions', {
   referenceNo: text('reference_no').default(''),
   recordedByBn: text('recorded_by_bn').default('প্রধান হিসাবরক্ষক'),
   notesBn: text('notes_bn').default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const financialAccounts = pgTable('financial_accounts', {
+  id: serial('id').primaryKey(),
+  accountCode: text('account_code').notNull().unique(),
+  accountNameBn: text('account_name_bn').notNull(),
+  accountType: text('account_type').notNull().default('bank'), // 'cash' | 'bank' | 'mfs'
+  bankNameBn: text('bank_name_bn').notNull(),
+  accountNumber: text('account_number').default(''),
+  branchBn: text('branch_bn').default('বনশ্রী শাখা, ঢাকা'),
+  openingBalanceBdt: integer('opening_balance_bdt').notNull().default(0),
+  currentBalanceBdt: integer('current_balance_bdt').notNull().default(0),
+  statusBn: text('status_bn').notNull().default('সক্রিয়'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const staffMembers = pgTable('staff_members', {
+  id: serial('id').primaryKey(),
+  employeeCode: text('employee_code').notNull().unique(),
+  nameBn: text('name_bn').notNull(),
+  designationBn: text('designation_bn').notNull(),
+  departmentBn: text('department_bn').notNull(),
+  phone: text('phone').notNull(),
+  email: text('email').notNull(),
+  joiningDate: text('joining_date').notNull(),
+  basicSalaryBdt: integer('basic_salary_bdt').notNull(),
+  allowanceBdt: integer('allowance_bdt').notNull().default(0),
+  bankAccountBn: text('bank_account_bn').default(''),
+  attendanceStatusBn: text('attendance_status_bn').notNull().default('উপস্থিত'),
+  statusBn: text('status_bn').notNull().default('সক্রিয়'),
+  passwordHash: text('password_hash').default('123456'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const salaryPayments = pgTable('salary_payments', {
+  id: serial('id').primaryKey(),
+  slipNumber: text('slip_number').notNull().unique(),
+  staffId: integer('staff_id').notNull(),
+  staffNameBn: text('staff_name_bn').notNull(),
+  departmentBn: text('department_bn').notNull(),
+  salaryMonth: text('salary_month').notNull(),
+  basicSalaryBdt: integer('basic_salary_bdt').notNull(),
+  allowanceBdt: integer('allowance_bdt').notNull().default(0),
+  deductionBdt: integer('deduction_bdt').notNull().default(0),
+  netSalaryBdt: integer('net_salary_bdt').notNull(),
+  accountId: integer('account_id').default(1),
+  paymentMethodBn: text('payment_method_bn').notNull(),
+  paidDate: text('paid_date').notNull(),
+  statusBn: text('status_bn').notNull().default('পরিশোধিত'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const shareholders = pgTable('shareholders', {
+  id: serial('id').primaryKey(),
+  shareholderCode: text('shareholder_code').notNull().unique(),
+  nameBn: text('name_bn').notNull(),
+  designationOrRoleBn: text('designation_or_role_bn').notNull(),
+  phone: text('phone').notNull(),
+  email: text('email').notNull(),
+  nidNumber: text('nid_number').default(''),
+  totalShares: integer('total_shares').notNull(),
+  sharePercent: integer('share_percent').notNull(),
+  committedCapitalBdt: integer('committed_capital_bdt').notNull(),
+  paidCapitalBdt: integer('paid_capital_bdt').notNull(),
+  totalDividendReceivedBdt: integer('total_dividend_received_bdt').notNull().default(0),
+  projectScopeBn: text('project_scope_bn').default('H & H Homes কর্পোরেট ইক্যুইটি'),
+  statusBn: text('status_bn').notNull().default('সক্রিয়'),
+  passwordHash: text('password_hash').default('123456'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const shareDistributions = pgTable('share_distributions', {
+  id: serial('id').primaryKey(),
+  distributionCode: text('distribution_code').notNull().unique(),
+  titleBn: text('title_bn').notNull(),
+  periodBn: text('period_bn').notNull(),
+  projectNameBn: text('project_name_bn').notNull(),
+  totalProfitBdt: integer('total_profit_bdt').notNull(),
+  shareholderId: integer('shareholder_id').notNull(),
+  shareholderNameBn: text('shareholder_name_bn').notNull(),
+  sharePercent: integer('share_percent').notNull(),
+  dividendAmountBdt: integer('dividend_amount_bdt').notNull(),
+  accountId: integer('account_id').default(1),
+  paymentMethodBn: text('payment_method_bn').notNull(),
+  distributedDate: text('distributed_date').notNull(),
+  statusBn: text('status_bn').notNull().default('বিতরণকৃত'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

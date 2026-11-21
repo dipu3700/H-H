@@ -4,12 +4,13 @@ import {
   generateReceiptNumber,
   generateVoucherNumber,
   calculateInstallmentPlan,
+  calculateShareDistribution,
   toEnglishDigits,
   validateBookingApplication,
   validateCustomerSignup,
 } from './bengaliLogic.ts';
 
-const STORAGE_KEY = 'hh_homes_cloudflare_db_v1';
+const STORAGE_KEY = 'hh_homes_cloudflare_db_v2';
 
 interface StandaloneDbState {
   users: any[];
@@ -21,6 +22,11 @@ interface StandaloneDbState {
   bookings: any[];
   payments: any[];
   erpTransactions: any[];
+  accounts: any[];
+  staffMembers: any[];
+  salaryPayments: any[];
+  shareholders: any[];
+  shareDistributions: any[];
   inquiries: any[];
   complaints: any[];
   notifications: any[];
@@ -637,6 +643,292 @@ function getInitialSeedState(): StandaloneDbState {
         notesBn: 'বনশ্রী সাইট স্টোরে মালামাল বুঝিয়ে নেওয়া হয়েছে।',
       },
     ],
+    accounts: [
+      {
+        id: 1,
+        accountCode: 'ACC-CASH-01',
+        accountNameBn: 'প্রধান ক্যাশ কাউন্টার (বনশ্রী অফিস)',
+        accountType: 'cash',
+        bankNameBn: 'কর্পোরেট ক্যাশ ভল্ট',
+        accountNumber: 'CASH-BONOSREE-01',
+        branchBn: 'রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা',
+        openingBalanceBdt: 650000,
+        currentBalanceBdt: 825000,
+        statusBn: 'সক্রিয়',
+      },
+      {
+        id: 2,
+        accountCode: 'ACC-IBBL-02',
+        accountNameBn: 'ইসলামী ব্যাংক পিএলসি — কর্পোরেট',
+        accountType: 'bank',
+        bankNameBn: 'ইসলামী ব্যাংক বাংলাদেশ পিএলসি',
+        accountNumber: '20502140100458912',
+        branchBn: 'বনশ্রী শাখা, ঢাকা',
+        openingBalanceBdt: 6500000,
+        currentBalanceBdt: 7111111,
+        statusBn: 'সক্রিয়',
+      },
+      {
+        id: 3,
+        accountCode: 'ACC-CITY-03',
+        accountNameBn: 'সিটি ব্যাংক পিএলসি — প্রজেক্ট এসক্রো',
+        accountType: 'bank',
+        bankNameBn: 'দি সিটি ব্যাংক পিএলসি',
+        accountNumber: '1102893400192',
+        branchBn: 'বসুন্ধরা শাখা, ঢাকা',
+        openingBalanceBdt: 4800000,
+        currentBalanceBdt: 5450000,
+        statusBn: 'সক্রিয়',
+      },
+      {
+        id: 4,
+        accountCode: 'ACC-BKASH-04',
+        accountNameBn: 'কর্পোরেট বিকাশ ও নগদ মার্চেন্ট',
+        accountType: 'mfs',
+        bankNameBn: 'বিকাশ / নগদ বিজনেস',
+        accountNumber: '01711223344',
+        branchBn: 'ডিজিটাল কালেকশন ওয়ালেট',
+        openingBalanceBdt: 250000,
+        currentBalanceBdt: 345000,
+        statusBn: 'সক্রিয়',
+      },
+    ],
+    staffMembers: [
+      {
+        id: 1,
+        employeeCode: 'HH-EMP-001',
+        nameBn: 'মোঃ সাইফুল ইসলাম (FCA-পার্ট)',
+        designationBn: 'প্রধান হিসাব ও ফাইন্যান্স ম্যানেজার',
+        departmentBn: 'হিসাব ও অর্থ',
+        phone: '01711000101',
+        email: 'accounts@hhhomesbd.com',
+        joiningDate: '2022-03-01',
+        basicSalaryBdt: 65000,
+        allowanceBdt: 20000,
+        bankAccountBn: 'ইসলামী ব্যাংক #2050-98112',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 2,
+        employeeCode: 'HH-EMP-002',
+        nameBn: 'প্রকৌশলী মোঃ রাশেদুল হক',
+        designationBn: 'সিনিয়র প্রজেক্ট ইঞ্জিনিয়ার (সিভিল)',
+        departmentBn: 'প্রকৌশল ও সাইট',
+        phone: '01711000201',
+        email: 'staff@hhhomesbd.com',
+        joiningDate: '2023-01-15',
+        basicSalaryBdt: 75000,
+        allowanceBdt: 25000,
+        bankAccountBn: 'সিটি ব্যাংক #1102-77211',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 3,
+        employeeCode: 'HH-EMP-003',
+        nameBn: 'সাবরিনা সুলতানা মিম',
+        designationBn: 'সিনিয়র সেলস ও ক্লায়েন্ট রিলেশন অফিসার',
+        departmentBn: 'বিক্রয় ও বিপণন',
+        phone: '01711000202',
+        email: 'sales@hhhomesbd.com',
+        joiningDate: '2023-08-10',
+        basicSalaryBdt: 42000,
+        allowanceBdt: 13000,
+        bankAccountBn: 'ইসলামী ব্যাংক #2050-66301',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 4,
+        employeeCode: 'HH-EMP-004',
+        nameBn: 'অ্যাডভোকেট নাজমুল হুদা',
+        designationBn: 'লিগ্যাল ও ভূমি নিবন্ধন কর্মকর্তা',
+        departmentBn: 'আইনি ও দলিল',
+        phone: '01711000203',
+        email: 'legal@hhhomesbd.com',
+        joiningDate: '2022-11-01',
+        basicSalaryBdt: 52000,
+        allowanceBdt: 15000,
+        bankAccountBn: 'সিটি ব্যাংক #1102-44219',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 5,
+        employeeCode: 'HH-EMP-005',
+        nameBn: 'মোঃ জহিরুল ইসলাম',
+        designationBn: 'সাইট সুপারভাইজার (বসুন্ধরা প্লট প্রকল্প)',
+        departmentBn: 'প্রকৌশল ও সাইট',
+        phone: '01711000204',
+        email: 'site@hhhomesbd.com',
+        joiningDate: '2024-02-01',
+        basicSalaryBdt: 28000,
+        allowanceBdt: 7000,
+        bankAccountBn: 'বিকাশ #01711000204',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 6,
+        employeeCode: 'HH-EMP-006',
+        nameBn: 'তাসনিম তাবাসসুম',
+        designationBn: 'এইচআর ও অ্যাডমিন এক্সিকিউটিভ',
+        departmentBn: 'প্রশাসন ও এইচআর',
+        phone: '01711000205',
+        email: 'hr@hhhomesbd.com',
+        joiningDate: '2024-05-12',
+        basicSalaryBdt: 36000,
+        allowanceBdt: 9000,
+        bankAccountBn: 'ইসলামী ব্যাংক #2050-55410',
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+    ],
+    salaryPayments: [
+      {
+        id: 1,
+        slipNumber: 'HH-PAY-2026-0101',
+        staffId: 1,
+        staffNameBn: 'মোঃ সাইফুল ইসলাম (FCA-পার্ট)',
+        departmentBn: 'হিসাব ও অর্থ',
+        salaryMonth: 'অক্টোবর ২০২৬',
+        basicSalaryBdt: 65000,
+        allowanceBdt: 20000,
+        deductionBdt: 0,
+        netSalaryBdt: 85000,
+        accountId: 2,
+        paymentMethodBn: 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক)',
+        paidDate: '2026-10-31',
+        statusBn: 'পরিশোধিত',
+      },
+      {
+        id: 2,
+        slipNumber: 'HH-PAY-2026-0102',
+        staffId: 2,
+        staffNameBn: 'প্রকৌশলী মোঃ রাশেদুল হক',
+        departmentBn: 'প্রকৌশল ও সাইট',
+        salaryMonth: 'অক্টোবর ২০২৬',
+        basicSalaryBdt: 75000,
+        allowanceBdt: 25000,
+        deductionBdt: 0,
+        netSalaryBdt: 100000,
+        accountId: 2,
+        paymentMethodBn: 'ব্যাংক ট্রান্সফার (সিটি ব্যাংক)',
+        paidDate: '2026-10-31',
+        statusBn: 'পরিশোধিত',
+      },
+    ],
+    shareholders: [
+      {
+        id: 1,
+        shareholderCode: 'HH-SH-001',
+        nameBn: 'আলহাজ্ব প্রকৌশলী মাহমুদুর রহমান চৌধুরী',
+        designationOrRoleBn: 'চেয়ারম্যান ও প্রধান উদ্যোক্তা শেয়ারহোল্ডার',
+        phone: '01711000301',
+        email: 'partner@hhhomesbd.com',
+        nidNumber: '1968123450011',
+        totalShares: 3500,
+        sharePercent: 35,
+        committedCapitalBdt: 35000000,
+        paidCapitalBdt: 35000000,
+        totalDividendReceivedBdt: 1050000,
+        projectScopeBn: 'সকল প্রকল্প (কর্পোরেট মূল শেয়ার)',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 2,
+        shareholderCode: 'HH-SH-002',
+        nameBn: 'মোঃ তানভীর আহমেদ হাসান',
+        designationOrRoleBn: 'ব্যবস্থাপনা পরিচালক ও ইক্যুইটি পার্টনার',
+        phone: '01711000302',
+        email: 'tanvir.partner@hhhomesbd.com',
+        nidNumber: '1976123450022',
+        totalShares: 3000,
+        sharePercent: 30,
+        committedCapitalBdt: 30000000,
+        paidCapitalBdt: 30000000,
+        totalDividendReceivedBdt: 900000,
+        projectScopeBn: 'সকল প্রকল্প (কর্পোরেট মূল শেয়ার)',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 3,
+        shareholderCode: 'HH-SH-003',
+        nameBn: 'স্থপতি ফারহানা ইয়াসমিন চৌধুরী',
+        designationOrRoleBn: 'পরিচালক ও জমি উন্নয়ন শেয়ারহোল্ডার',
+        phone: '01711000303',
+        email: 'farhana.partner@hhhomesbd.com',
+        nidNumber: '1981123450033',
+        totalShares: 2000,
+        sharePercent: 20,
+        committedCapitalBdt: 20000000,
+        paidCapitalBdt: 20000000,
+        totalDividendReceivedBdt: 600000,
+        projectScopeBn: 'এইচ অ্যান্ড এইচ সিগনেচার টাওয়ার (বনশ্রী)',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+      {
+        id: 4,
+        shareholderCode: 'HH-SH-004',
+        nameBn: 'ড. কামরুল হাসান এফসিএ',
+        designationOrRoleBn: 'পরিচালক (অর্থ) ও বিনিয়োগ অংশীদার',
+        phone: '01711000304',
+        email: 'kamrul.partner@hhhomesbd.com',
+        nidNumber: '1974123450044',
+        totalShares: 1500,
+        sharePercent: 15,
+        committedCapitalBdt: 15000000,
+        paidCapitalBdt: 15000000,
+        totalDividendReceivedBdt: 450000,
+        projectScopeBn: 'এইচ অ্যান্ড এইচ বসুন্ধরা গ্রিন টাউনশিপ',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      },
+    ],
+    shareDistributions: [
+      {
+        id: 1,
+        distributionCode: 'HH-DIV-2026-0101',
+        titleBn: '৩য় প্রান্তিক (Q3-২০২৬) নিট মুনাফা লভ্যাংশ বিতরণ',
+        periodBn: 'জুলাই – সেপ্টেম্বর ২০২৬',
+        projectNameBn: 'সকল প্রকল্প সমন্বিত হিসাব',
+        totalProfitBdt: 3000000,
+        shareholderId: 1,
+        shareholderNameBn: 'আলহাজ্ব প্রকৌশলী মাহমুদুর রহমান চৌধুরী',
+        sharePercent: 35,
+        dividendAmountBdt: 1050000,
+        accountId: 2,
+        paymentMethodBn: 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক পিএলসি)',
+        distributedDate: '2026-10-15',
+        statusBn: 'বিতরণকৃত',
+      },
+      {
+        id: 2,
+        distributionCode: 'HH-DIV-2026-0102',
+        titleBn: '৩য় প্রান্তিক (Q3-২০২৬) নিট মুনাফা লভ্যাংশ বিতরণ',
+        periodBn: 'জুলাই – সেপ্টেম্বর ২০২৬',
+        projectNameBn: 'সকল প্রকল্প সমন্বিত হিসাব',
+        totalProfitBdt: 3000000,
+        shareholderId: 2,
+        shareholderNameBn: 'মোঃ তানভীর আহমেদ হাসান',
+        sharePercent: 30,
+        dividendAmountBdt: 900000,
+        accountId: 2,
+        paymentMethodBn: 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক পিএলসি)',
+        distributedDate: '2026-10-15',
+        statusBn: 'বিতরণকৃত',
+      },
+    ],
     inquiries: [],
     complaints: [],
     notifications: [
@@ -1062,6 +1354,21 @@ async function handleStandaloneApiRequest(urlObj: URL, init?: RequestInit): Prom
     return jsonResponse({ testimonial }, 201);
   }
 
+  // 5B. POST /api/portal/pay/:id
+  const portalPayIdMatch = path.match(/^\/api\/portal\/pay\/(\d+)$/);
+  if (portalPayIdMatch && method === 'POST') {
+    const paymentId = Number(portalPayIdMatch[1]);
+    const paymentMethodBn = String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার / অনলাইন পেমেন্ট');
+    const payment = state.payments.find((p) => p.id === paymentId);
+    if (!payment) return jsonResponse({ error: 'কিস্তির তথ্য পাওয়া যায়নি।' }, 400);
+    const today = new Date().toISOString().split('T')[0];
+    payment.statusBn = 'পরিশোধিত';
+    payment.paidDate = today;
+    payment.paymentMethodBn = paymentMethodBn;
+    saveState(state);
+    return jsonResponse({ payment });
+  }
+
   // 10. GET /api/admin/erp
   if (path === '/api/admin/erp' && method === 'GET') {
     return jsonResponse({
@@ -1073,6 +1380,11 @@ async function handleStandaloneApiRequest(urlObj: URL, init?: RequestInit): Prom
       bookings: state.bookings,
       payments: state.payments,
       erpTransactions: state.erpTransactions,
+      accounts: state.accounts || [],
+      staffMembers: state.staffMembers || [],
+      salaryPayments: state.salaryPayments || [],
+      shareholders: state.shareholders || [],
+      shareDistributions: state.shareDistributions || [],
       inquiries: state.inquiries,
       complaints: state.complaints,
       gallery: state.gallery,
@@ -1104,24 +1416,361 @@ async function handleStandaloneApiRequest(urlObj: URL, init?: RequestInit): Prom
 
   // 12. POST /api/admin/erp/transactions
   if (path === '/api/admin/erp/transactions' && method === 'POST') {
+    const amount = Math.round(Number(body.amountBdt || 0));
+    const txType = body.type === 'expense' ? 'expense' : 'income';
+    const accountId = Number(body.accountId || 0);
     const tx = {
       id: state.erpTransactions.length + 1,
       voucherNo: generateVoucherNumber(1010 + state.erpTransactions.length, 2026),
       transactionDate: String(body.transactionDate || new Date().toISOString().split('T')[0]),
-      type: body.type === 'expense' ? 'expense' : 'income',
+      type: txType,
       categoryBn: String(body.categoryBn || 'সাধারণ হিসাব'),
+      costCenterBn: String(body.costCenterBn || 'সাধারণ'),
+      accountId,
       projectId: Number(body.projectId || 0),
       projectNameBn: String(body.projectNameBn || 'সাধারণ কর্পোরেট হিসাব'),
       titleBn: String(body.titleBn || ''),
-      amountBdt: Number(body.amountBdt || 0),
+      amountBdt: amount,
       paymentMethodBn: String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার'),
       referenceNo: String(body.referenceNo || ''),
       recordedByBn: String(body.recordedByBn || 'প্রধান হিসাবরক্ষক'),
       notesBn: String(body.notesBn || ''),
     };
     state.erpTransactions.unshift(tx);
+    if (accountId > 0 && Array.isArray(state.accounts)) {
+      const acc = state.accounts.find((a) => a.id === accountId);
+      if (acc) acc.currentBalanceBdt += txType === 'income' ? amount : -amount;
+    }
     saveState(state);
     return jsonResponse({ transaction: tx }, 201);
+  }
+
+  // 12B. Financial Accounts & Transfers
+  if (path === '/api/admin/accounts' && method === 'POST') {
+    const bal = Math.round(Number(body.openingBalanceBdt || 0));
+    const account = {
+      id: (state.accounts?.length || 0) + 1,
+      accountCode: `ACC-${String(body.accountType || 'bank').toUpperCase()}-${(state.accounts?.length || 0) + 1}`,
+      accountNameBn: String(body.accountNameBn || ''),
+      accountType: String(body.accountType || 'bank'),
+      bankNameBn: String(body.bankNameBn || ''),
+      accountNumber: String(body.accountNumber || ''),
+      branchBn: String(body.branchBn || 'বনশ্রী শাখা, ঢাকা'),
+      openingBalanceBdt: bal,
+      currentBalanceBdt: bal,
+      statusBn: 'সক্রিয়',
+    };
+    state.accounts = [...(state.accounts || []), account];
+    saveState(state);
+    return jsonResponse({ account }, 201);
+  }
+
+  if (path === '/api/admin/accounts/transfer' && method === 'POST') {
+    const fromAcc = state.accounts?.find((a) => a.id === Number(body.fromAccountId));
+    const toAcc = state.accounts?.find((a) => a.id === Number(body.toAccountId));
+    const amt = Math.round(Number(body.amountBdt || 0));
+    if (!fromAcc || !toAcc || amt <= 0 || fromAcc.id === toAcc.id) {
+      return jsonResponse({ error: 'সঠিক উৎস, গন্তব্য অ্যাকাউন্ট এবং টাকার পরিমাণ দিন।' }, 400);
+    }
+    fromAcc.currentBalanceBdt -= amt;
+    toAcc.currentBalanceBdt += amt;
+    state.erpTransactions.unshift({
+      id: state.erpTransactions.length + 1,
+      voucherNo: generateVoucherNumber(1300 + state.erpTransactions.length, 2026),
+      transactionDate: new Date().toISOString().split('T')[0],
+      type: 'expense',
+      categoryBn: 'অ্যাকাউন্ট ফান্ড ট্রান্সফার',
+      costCenterBn: 'কর্পোরেট ট্রেজারি',
+      accountId: fromAcc.id,
+      projectId: 0,
+      projectNameBn: 'কর্পোরেট ফান্ড ট্রান্সফার',
+      titleBn: `ফান্ড ট্রান্সফার: ${fromAcc.accountNameBn} → ${toAcc.accountNameBn}`,
+      amountBdt: amt,
+      paymentMethodBn: `${fromAcc.bankNameBn} → ${toAcc.bankNameBn}`,
+      referenceNo: '',
+      recordedByBn: 'প্রধান হিসাবরক্ষক',
+      notesBn: String(body.notesBn || ''),
+    });
+    saveState(state);
+    return jsonResponse({ ok: true }, 201);
+  }
+
+  // 12C. Staff HR & Payroll
+  if (path === '/api/admin/staff' && method === 'POST') {
+    const staff = {
+      id: (state.staffMembers?.length || 0) + 1,
+      employeeCode: `HH-EMP-${String((state.staffMembers?.length || 0) + 1).padStart(3, '0')}`,
+      nameBn: String(body.nameBn || '').trim(),
+      designationBn: String(body.designationBn || '').trim(),
+      departmentBn: String(body.departmentBn || 'প্রশাসন ও এইচআর'),
+      phone: String(body.phone || ''),
+      email: String(body.email || '').toLowerCase(),
+      joiningDate: String(body.joiningDate || new Date().toISOString().split('T')[0]),
+      basicSalaryBdt: Math.round(Number(body.basicSalaryBdt || 0)),
+      allowanceBdt: Math.round(Number(body.allowanceBdt || 0)),
+      bankAccountBn: String(body.bankAccountBn || ''),
+      attendanceStatusBn: 'উপস্থিত',
+      statusBn: 'সক্রিয়',
+      passwordHash: '123456',
+    };
+    state.staffMembers = [...(state.staffMembers || []), staff];
+    saveState(state);
+    return jsonResponse({ staff }, 201);
+  }
+
+  const staffPutMatch = path.match(/^\/api\/admin\/staff\/(\d+)$/);
+  if (staffPutMatch && method === 'PUT') {
+    const id = Number(staffPutMatch[1]);
+    const staff = state.staffMembers?.find((s) => s.id === id);
+    if (staff) {
+      Object.assign(staff, body);
+      saveState(state);
+    }
+    return jsonResponse({ staff });
+  }
+
+  if (path === '/api/admin/payroll' && method === 'POST') {
+    const staffId = Number(body.staffId || 0);
+    const targets = (state.staffMembers || []).filter(
+      (s) => s.statusBn !== 'অব্যাহতিপ্রাপ্ত' && (!staffId || s.id === staffId)
+    );
+    const today = new Date().toISOString().split('T')[0];
+    const accountId = Number(body.accountId || 2);
+    const slips = targets.map((st, idx) => {
+      const ded = staffId ? Math.max(0, Math.round(Number(body.deductionBdt || 0))) : 0;
+      const net = Math.max(0, st.basicSalaryBdt + st.allowanceBdt - ded);
+      return {
+        id: (state.salaryPayments?.length || 0) + idx + 1,
+        slipNumber: `HH-PAY-2026-${String((state.salaryPayments?.length || 0) + idx + 105).padStart(4, '0')}`,
+        staffId: st.id,
+        staffNameBn: st.nameBn,
+        departmentBn: st.departmentBn,
+        salaryMonth: String(body.salaryMonth || 'নভেম্বর ২০২৬'),
+        basicSalaryBdt: st.basicSalaryBdt,
+        allowanceBdt: st.allowanceBdt,
+        deductionBdt: ded,
+        netSalaryBdt: net,
+        accountId,
+        paymentMethodBn: String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক)'),
+        paidDate: today,
+        statusBn: 'পরিশোধিত',
+      };
+    });
+    const totalPaidBdt = slips.reduce((sum, s) => sum + s.netSalaryBdt, 0);
+    state.salaryPayments = [...slips, ...(state.salaryPayments || [])];
+    state.erpTransactions.unshift({
+      id: state.erpTransactions.length + 1,
+      voucherNo: generateVoucherNumber(1400 + state.erpTransactions.length, 2026),
+      transactionDate: today,
+      type: 'expense',
+      categoryBn: 'অফিস বেতন ও প্রশাসনিক ব্যয়',
+      costCenterBn: 'স্টাফ ও পেরোল বিভাগ',
+      accountId,
+      projectId: 0,
+      projectNameBn: 'কর্পোরেট এইচআর ও পেরোল',
+      titleBn: `${String(body.salaryMonth || 'নভেম্বর ২০২৬')} মাসের স্টাফ বেতন পরিশোধ (${targets.length} জন)`,
+      amountBdt: totalPaidBdt,
+      paymentMethodBn: String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার'),
+      referenceNo: slips[0]?.slipNumber || '',
+      recordedByBn: 'এইচআর ও হিসাব বিভাগ',
+      notesBn: 'স্বয়ংক্রিয় পেরোল রান।',
+    });
+    const acc = state.accounts?.find((a) => a.id === accountId);
+    if (acc) acc.currentBalanceBdt -= totalPaidBdt;
+    saveState(state);
+    return jsonResponse({ slips, totalPaidBdt }, 201);
+  }
+
+  // 12D. Shareholders & Dividends
+  if (path === '/api/admin/shareholders' && method === 'POST') {
+    const shareholder = {
+      id: (state.shareholders?.length || 0) + 1,
+      shareholderCode: `HH-SH-${String((state.shareholders?.length || 0) + 1).padStart(3, '0')}`,
+      nameBn: String(body.nameBn || '').trim(),
+      designationOrRoleBn: String(body.designationOrRoleBn || 'শেয়ারহোল্ডার'),
+      phone: String(body.phone || ''),
+      email: String(body.email || '').toLowerCase(),
+      nidNumber: String(body.nidNumber || ''),
+      totalShares: Math.round(Number(body.totalShares || 0)),
+      sharePercent: Math.round(Number(body.sharePercent || 0)),
+      committedCapitalBdt: Math.round(Number(body.committedCapitalBdt || 0)),
+      paidCapitalBdt: Math.round(Number(body.paidCapitalBdt || 0)),
+      totalDividendReceivedBdt: 0,
+      projectScopeBn: String(body.projectScopeBn || 'H & H Homes কর্পোরেট ইক্যুইটি'),
+      statusBn: 'সক্রিয়',
+      passwordHash: '123456',
+    };
+    state.shareholders = [...(state.shareholders || []), shareholder];
+    saveState(state);
+    return jsonResponse({ shareholder }, 201);
+  }
+
+  if (path === '/api/admin/shareholders/distribute' && method === 'POST') {
+    const holders = state.shareholders || [];
+    const calc = calculateShareDistribution(Number(body.totalProfitBdt || 0), holders);
+    const today = new Date().toISOString().split('T')[0];
+    const accountId = Number(body.accountId || 2);
+    const distributions = calc.allocations.map((a, idx) => {
+      const h = holders.find((item) => item.id === a.shareholderId);
+      if (h) h.totalDividendReceivedBdt += a.dividendAmountBdt;
+      return {
+        id: (state.shareDistributions?.length || 0) + idx + 1,
+        distributionCode: `HH-DIV-2026-${String((state.shareDistributions?.length || 0) + idx + 105).padStart(4, '0')}`,
+        titleBn: String(body.titleBn || 'মুনাফা লভ্যাংশ বিতরণ'),
+        periodBn: String(body.periodBn || '২০২৬'),
+        projectNameBn: String(body.projectNameBn || 'সকল প্রকল্প সমন্বিত হিসাব'),
+        totalProfitBdt: calc.totalProfitBdt,
+        shareholderId: a.shareholderId,
+        shareholderNameBn: a.nameBn,
+        sharePercent: a.sharePercent,
+        dividendAmountBdt: a.dividendAmountBdt,
+        accountId,
+        paymentMethodBn: String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার'),
+        distributedDate: today,
+        statusBn: 'বিতরণকৃত',
+      };
+    });
+    state.shareDistributions = [...distributions, ...(state.shareDistributions || [])];
+    state.erpTransactions.unshift({
+      id: state.erpTransactions.length + 1,
+      voucherNo: generateVoucherNumber(1500 + state.erpTransactions.length, 2026),
+      transactionDate: today,
+      type: 'expense',
+      categoryBn: 'শেয়ারহোল্ডার লভ্যাংশ বিতরণ',
+      costCenterBn: 'ইক্যুইটি ও শেয়ার লভ্যাংশ',
+      accountId,
+      projectId: 0,
+      projectNameBn: String(body.projectNameBn || 'সকল প্রকল্প সমন্বিত হিসাব'),
+      titleBn: `${String(body.titleBn || 'লভ্যাংশ বিতরণ')} — মোট লভ্যাংশ`,
+      amountBdt: calc.totalAllocatedDividendBdt,
+      paymentMethodBn: String(body.paymentMethodBn || 'ব্যাংক ট্রান্সফার'),
+      referenceNo: distributions[0]?.distributionCode || '',
+      recordedByBn: 'পরিচালক (অর্থ ও হিসাব)',
+      notesBn: 'আনুপাতিক শেয়ার লভ্যাংশ বিতরণ।',
+    });
+    const acc = state.accounts?.find((a) => a.id === accountId);
+    if (acc) acc.currentBalanceBdt -= calc.totalAllocatedDividendBdt;
+    saveState(state);
+    return jsonResponse({ distributions, totalDistributedBdt: calc.totalAllocatedDividendBdt }, 201);
+  }
+
+  // 12E. Role-Based Login & Portals
+  if (path === '/api/role-login' && method === 'POST') {
+    const role = body.role;
+    const rawId = String(body.identifier || '').trim();
+    const pwd = String(body.password || '');
+    const cleanPhone = toEnglishDigits(rawId).replace(/[\s\-+]/g, '');
+    const cleanEmail = rawId.toLowerCase();
+
+    if (role === 'admin') {
+      if (
+        (cleanEmail === 'admin@hhhomesbd.com' || cleanEmail === 'info@hhhomesbd.com' || cleanPhone === '01711000001') &&
+        pwd === '123456'
+      ) {
+        return jsonResponse({
+          session: {
+            role: 'admin',
+            id: 1,
+            code: 'HH-ADMIN-01',
+            nameBn: 'মোঃ তানভীর আহমেদ হাসান',
+            designationBn: 'ব্যবস্থাপনা পরিচালক ও মাস্টার অ্যাডমিন',
+            email: 'admin@hhhomesbd.com',
+            phone: '01711000001',
+          },
+        });
+      }
+      return jsonResponse({ error: 'অ্যাডমিন আইডি বা পাসওয়ার্ড সঠিক নয়।' }, 401);
+    }
+
+    if (role === 'accounts') {
+      const accOfficer = (state.staffMembers || []).find(
+        (s) =>
+          s.departmentBn.includes('হিসাব') &&
+          ((s.email || '').toLowerCase() === cleanEmail || s.phone === cleanPhone || s.employeeCode === rawId)
+      );
+      if (accOfficer && (accOfficer.passwordHash || '123456') === pwd) {
+        return jsonResponse({
+          session: {
+            role: 'accounts',
+            id: accOfficer.id,
+            code: accOfficer.employeeCode,
+            nameBn: accOfficer.nameBn,
+            designationBn: accOfficer.designationBn,
+            email: accOfficer.email,
+            phone: accOfficer.phone,
+          },
+        });
+      }
+      return jsonResponse({ error: 'হিসাব কর্মকর্তার আইডি বা পাসওয়ার্ড সঠিক নয়।' }, 401);
+    }
+
+    if (role === 'staff') {
+      const st = (state.staffMembers || []).find(
+        (s) => (s.email || '').toLowerCase() === cleanEmail || s.phone === cleanPhone || s.employeeCode === rawId
+      );
+      if (st && (st.passwordHash || '123456') === pwd) {
+        return jsonResponse({
+          session: {
+            role: 'staff',
+            id: st.id,
+            code: st.employeeCode,
+            nameBn: st.nameBn,
+            designationBn: `${st.designationBn} · ${st.departmentBn}`,
+            email: st.email,
+            phone: st.phone,
+          },
+        });
+      }
+      return jsonResponse({ error: 'স্টাফ আইডি বা পাসওয়ার্ড সঠিক নয়।' }, 401);
+    }
+
+    if (role === 'shareholder') {
+      const holder = (state.shareholders || []).find(
+        (h) => (h.email || '').toLowerCase() === cleanEmail || h.phone === cleanPhone || h.shareholderCode === rawId
+      );
+      if (holder && (holder.passwordHash || '123456') === pwd) {
+        return jsonResponse({
+          session: {
+            role: 'shareholder',
+            id: holder.id,
+            code: holder.shareholderCode,
+            nameBn: holder.nameBn,
+            designationBn: holder.designationOrRoleBn,
+            email: holder.email,
+            phone: holder.phone,
+          },
+        });
+      }
+      return jsonResponse({ error: 'শেয়ারহোল্ডার আইডি বা পাসওয়ার্ড সঠিক নয়।' }, 401);
+    }
+    return jsonResponse({ error: 'অবৈধ রোল।' }, 400);
+  }
+
+  if (path === '/api/shareholder/portal' && method === 'GET') {
+    const id = Number(urlObj.searchParams.get('id') || 1);
+    const holders = state.shareholders || [];
+    const holder = holders.find((h) => h.id === id) || holders[0] || null;
+    const dists = (state.shareDistributions || []).filter((d) => holder && d.shareholderId === holder.id);
+    return jsonResponse({
+      shareholder: holder,
+      allShareholders: holders,
+      distributions: dists,
+      projects: state.projects,
+      transactions: state.erpTransactions,
+    });
+  }
+
+  if (path === '/api/staff/portal' && method === 'GET') {
+    const id = Number(urlObj.searchParams.get('id') || 1);
+    const staffList = state.staffMembers || [];
+    const staff = staffList.find((s) => s.id === id) || staffList[0] || null;
+    const slips = (state.salaryPayments || []).filter((s) => staff && s.staffId === staff.id);
+    return jsonResponse({
+      staff,
+      salarySlips: slips,
+      projects: state.projects,
+      colleaguesCount: staffList.length,
+    });
   }
 
   // 13. POST /api/admin/payments/receipt
@@ -1344,9 +1993,13 @@ async function handleStandaloneApiRequest(urlObj: URL, init?: RequestInit): Prom
  */
 export function installCloudflareApiFallback() {
   if (typeof window === 'undefined') return;
-  const originalFetch = window.fetch.bind(window);
+  if ((window as any).__hhCloudflareFetchInstalled) return;
 
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+  const rawFetch = window.fetch;
+  if (typeof rawFetch !== 'function') return;
+  const originalFetch = rawFetch.bind(window);
+
+  const wrappedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const urlStr =
       typeof input === 'string'
         ? input
@@ -1380,4 +2033,24 @@ export function installCloudflareApiFallback() {
 
     return originalFetch(input, init);
   };
+
+  try {
+    const ownDesc = Object.getOwnPropertyDescriptor(window, 'fetch');
+    if (ownDesc && !ownDesc.configurable) {
+      if (ownDesc.writable) {
+        Object.defineProperty(window, 'fetch', { value: wrappedFetch });
+        (window as any).__hhCloudflareFetchInstalled = true;
+      }
+      return;
+    }
+    Object.defineProperty(window, 'fetch', {
+      value: wrappedFetch,
+      configurable: true,
+      writable: true,
+      enumerable: true,
+    });
+    (window as any).__hhCloudflareFetchInstalled = true;
+  } catch {
+    // Skip patching if host realm strictly locks window.fetch
+  }
 }

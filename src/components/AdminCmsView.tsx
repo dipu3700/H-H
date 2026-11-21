@@ -31,6 +31,10 @@ import {
   List,
   LayoutGrid,
   Terminal,
+  Landmark,
+  Layers,
+  PieChart,
+  Briefcase,
 } from 'lucide-react';
 import {
   SiteSettings,
@@ -41,6 +45,12 @@ import {
   BookingItem,
   PaymentItem,
   ErpTransactionItem,
+  FinancialAccountItem,
+  StaffMemberItem,
+  SalaryPaymentItem,
+  ShareholderItem,
+  ShareDistributionItem,
+  RoleSessionUser,
   InquiryItem,
   GalleryItem,
   TestimonialItem,
@@ -50,17 +60,22 @@ import {
 import {
   formatExactBdtBengali,
   toBengaliDigits,
-  calculateErpAccountingSummary,
 } from '../utils/bengaliLogic';
 import { ArchitecturalRender, ExecutivePortrait } from './ArchitecturalVisuals';
 import { MoneyReceiptModal, MoneyReceiptData } from './MoneyReceiptModal';
 import { ProjectPropertyViewerModal, ViewerTarget } from './ProjectPropertyViewerModal';
+import { AccountsLedgerModule } from './erp/AccountsLedgerModule';
+import { ShareAccountingModule } from './erp/ShareAccountingModule';
+import { StaffPayrollModule } from './erp/StaffPayrollModule';
 
 export type AdminSystemMode = 'realestate_erp' | 'website_cms';
 
-type ErpTab =
+export type ErpTab =
   | 'মানি রিসিট ও কিস্তি আদায়'
-  | 'হিসাবরক্ষণ ও লেজার'
+  | 'হিসাব ও ব্যাংক অ্যাকাউন্ট'
+  | 'আয়-ব্যয় ও খরচ বিশ্লেষণ'
+  | 'শেয়ার ভিত্তিক হিসাব'
+  | 'স্টাফ ও বেতন (HR)'
   | 'বুকিং অনুমোদন ও কিস্তি'
   | 'মাস্টার প্রজেক্ট এন্ট্রি'
   | 'মাস্টার প্রপার্টি ইনভেন্টরি'
@@ -77,12 +92,27 @@ type WebCmsTab =
 
 export const AdminCmsView: React.FC<{
   initialMode?: AdminSystemMode;
+  initialErpTab?: ErpTab;
+  currentStaffRole?: RoleSessionUser | null;
+  onLogout?: () => void;
   onBackToHome: () => void;
   onDataMutated: () => void;
-}> = ({ initialMode = 'realestate_erp', onBackToHome, onDataMutated }) => {
+}> = ({
+  initialMode = 'realestate_erp',
+  initialErpTab = 'মানি রিসিট ও কিস্তি আদায়',
+  currentStaffRole = null,
+  onLogout,
+  onBackToHome,
+  onDataMutated,
+}) => {
   const [systemMode, setSystemMode] = useState<AdminSystemMode>(initialMode);
-  const [erpTab, setErpTab] = useState<ErpTab>('মানি রিসিট ও কিস্তি আদায়');
+  const [erpTab, setErpTab] = useState<ErpTab>(initialErpTab);
   const [webTab, setWebTab] = useState<WebCmsTab>('ইআরপি ডাটা সিলেকশন');
+
+  useEffect(() => {
+    setErpTab(initialErpTab);
+    setSystemMode('realestate_erp');
+  }, [initialErpTab]);
 
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [heroSlides, setHeroSlides] = useState<HeroSlideItem[]>([]);
@@ -92,6 +122,11 @@ export const AdminCmsView: React.FC<{
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [erpTransactions, setErpTransactions] = useState<ErpTransactionItem[]>([]);
+  const [accounts, setAccounts] = useState<FinancialAccountItem[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMemberItem[]>([]);
+  const [salaryPayments, setSalaryPayments] = useState<SalaryPaymentItem[]>([]);
+  const [shareholders, setShareholders] = useState<ShareholderItem[]>([]);
+  const [shareDistributions, setShareDistributions] = useState<ShareDistributionItem[]>([]);
   const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
@@ -193,6 +228,12 @@ export const AdminCmsView: React.FC<{
     setSystemMode(initialMode);
   }, [initialMode]);
 
+  useEffect(() => {
+    if (initialErpTab) {
+      setErpTab(initialErpTab);
+    }
+  }, [initialErpTab]);
+
   const loadErpData = async () => {
     setLoading(true);
     try {
@@ -206,6 +247,11 @@ export const AdminCmsView: React.FC<{
       setBookings(data.bookings || []);
       setPayments(data.payments || []);
       setErpTransactions(data.erpTransactions || []);
+      setAccounts(data.accounts || []);
+      setStaffMembers(data.staffMembers || []);
+      setSalaryPayments(data.salaryPayments || []);
+      setShareholders(data.shareholders || []);
+      setShareDistributions(data.shareDistributions || []);
       setInquiries(data.inquiries || []);
       setGallery(data.gallery || []);
       setTestimonials(data.testimonials || []);
@@ -213,6 +259,8 @@ export const AdminCmsView: React.FC<{
       setCustomers(data.customers || []);
       if (data.bookings && data.bookings.length > 0 && !mrBookingId) {
         setMrBookingId(String(data.bookings[0].id));
+        if (!mrCustomerName) setMrCustomerName(data.bookings[0].customerName || '');
+        if (!mrCustomerPhone) setMrCustomerPhone(data.bookings[0].customerPhone || '');
       }
     } finally {
       setLoading(false);
@@ -227,8 +275,6 @@ export const AdminCmsView: React.FC<{
     setStatusBanner(msg);
     setTimeout(() => setStatusBanner(''), 4500);
   };
-
-  const accountingSummary = calculateErpAccountingSummary(erpTransactions, bookings);
 
   // Build MoneyReceiptData from a PaymentItem
   const openReceiptForPayment = (pay: PaymentItem) => {
@@ -327,7 +373,11 @@ export const AdminCmsView: React.FC<{
 
     if (res.ok) {
       const data = await res.json();
-      const generatedNo = data.receiptNumber || data.receiptNo || `HH-MR-2026-${Date.now().toString().slice(-4)}`;
+      const generatedNo =
+        data.payment?.receiptNumber ||
+        data.receiptNumber ||
+        data.receiptNo ||
+        `HH-MR-2026-${Date.now().toString().slice(-4)}`;
       notify(`নতুন মানি রিসিট (${generatedNo}) সফলভাবে তৈরি হয়েছে।`);
       await loadErpData();
       setActiveReceipt({
@@ -643,11 +693,11 @@ export const AdminCmsView: React.FC<{
           </button>
           <div className="min-w-0">
             <span className="text-[10px] sm:text-xs font-bold text-[#34D399] block truncate">
-              H &amp; H Homes · রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা
+              H &amp; H Homes · {currentStaffRole ? `${currentStaffRole.nameBn} (${currentStaffRole.code})` : 'রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা'}
             </span>
             <h1 className="text-sm sm:text-lg md:text-xl font-extrabold text-white truncate">
               {systemMode === 'realestate_erp'
-                ? 'প্যানেল ১: ইআরপি, মানি রিসিট ও একাউন্টিং'
+                ? 'প্যানেল ১: ইআরপি, মানি রিসিট ও কর্পোরেট একাউন্টিং'
                 : 'প্যানেল ২: পাবলিক ওয়েবসাইট কন্ট্রোল ও সিএমএস'}
             </h1>
           </div>
@@ -680,6 +730,16 @@ export const AdminCmsView: React.FC<{
             <span className="truncate">২. ওয়েবসাইট কন্ট্রোল</span>
           </button>
         </div>
+
+        {currentStaffRole && onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 text-xs font-bold transition-colors cursor-pointer shrink-0"
+          >
+            লগআউট
+          </button>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row">
@@ -696,7 +756,10 @@ export const AdminCmsView: React.FC<{
               {(
                 [
                   { label: 'মানি রিসিট ও কিস্তি আদায়', icon: Receipt },
-                  { label: 'হিসাবরক্ষণ ও লেজার', icon: Calculator },
+                  { label: 'হিসাব ও ব্যাংক অ্যাকাউন্ট', icon: Landmark },
+                  { label: 'আয়-ব্যয় ও খরচ বিশ্লেষণ', icon: Layers },
+                  { label: 'শেয়ার ভিত্তিক হিসাব', icon: PieChart },
+                  { label: 'স্টাফ ও বেতন (HR)', icon: Briefcase },
                   { label: 'বুকিং অনুমোদন ও কিস্তি', icon: BookmarkCheck },
                   { label: 'মাস্টার প্রজেক্ট এন্ট্রি', icon: Building2 },
                   { label: 'মাস্টার প্রপার্টি ইনভেন্টরি', icon: Home },
@@ -756,7 +819,7 @@ export const AdminCmsView: React.FC<{
         </aside>
 
         {/* Main Workspace */}
-        <main className="flex-1 p-3.5 sm:p-5 md:p-8 max-w-7xl mx-auto w-full space-y-5 sm:space-y-6">
+        <main className="flex-1 min-w-0 overflow-x-hidden p-3.5 sm:p-5 md:p-8 max-w-7xl mx-auto w-full space-y-5 sm:space-y-6">
           {statusBanner && (
             <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-sm">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -1018,219 +1081,55 @@ export const AdminCmsView: React.FC<{
                 </div>
               )}
 
-              {/* TAB 2: ACCOUNTING & LEDGER */}
-              {erpTab === 'হিসাবরক্ষণ ও লেজার' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div className="bg-white p-5 rounded-2xl border-2 border-emerald-500/30 shadow-sm">
-                      <div className="flex items-center justify-between text-emerald-700">
-                        <span className="text-xs font-bold">মোট আদায় ও আয়</span>
-                        <TrendingUp className="w-4 h-4" />
-                      </div>
-                      <p className="text-xl font-extrabold text-emerald-800 mt-2 tabular-nums-bn">
-                        {formatExactBdtBengali(accountingSummary.totalIncomeBdt)}
-                      </p>
-                    </div>
+              {/* TAB 2A: ACCOUNTS & BANK/CASH LEDGER */}
+              {erpTab === 'হিসাব ও ব্যাংক অ্যাকাউন্ট' && (
+                <AccountsLedgerModule
+                  mode="accounts"
+                  accounts={accounts}
+                  transactions={erpTransactions}
+                  projects={projects}
+                  bookings={bookings}
+                  onRefresh={loadErpData}
+                  onNotify={notify}
+                  onPrintVoucher={openReceiptForVoucher}
+                />
+              )}
 
-                    <div className="bg-white p-5 rounded-2xl border-2 border-rose-500/30 shadow-sm">
-                      <div className="flex items-center justify-between text-rose-700">
-                        <span className="text-xs font-bold">মোট নির্মাণ ও ভূমি ব্যয়</span>
-                        <TrendingDown className="w-4 h-4" />
-                      </div>
-                      <p className="text-xl font-extrabold text-rose-800 mt-2 tabular-nums-bn">
-                        {formatExactBdtBengali(accountingSummary.totalExpenseBdt)}
-                      </p>
-                    </div>
+              {/* TAB 2B: INCOME, EXPENSE & COST CENTER P&L */}
+              {erpTab === 'আয়-ব্যয় ও খরচ বিশ্লেষণ' && (
+                <AccountsLedgerModule
+                  mode="expenses"
+                  accounts={accounts}
+                  transactions={erpTransactions}
+                  projects={projects}
+                  bookings={bookings}
+                  onRefresh={loadErpData}
+                  onNotify={notify}
+                  onPrintVoucher={openReceiptForVoucher}
+                />
+              )}
 
-                    <div className="bg-[#062E26] text-white p-5 rounded-2xl border-2 border-[#34D399]/50 shadow-sm">
-                      <div className="flex items-center justify-between text-[#6EE7B7]">
-                        <span className="text-xs font-bold">নিট ক্যাশ ব্যালেন্স</span>
-                        <Wallet className="w-4 h-4" />
-                      </div>
-                      <p className="text-xl font-extrabold text-white mt-2 tabular-nums-bn">
-                        {formatExactBdtBengali(accountingSummary.netBalanceBdt)}
-                      </p>
-                    </div>
+              {/* TAB 2C: SHARE-BASED ACCOUNTING & EQUITY DIVIDENDS */}
+              {erpTab === 'শেয়ার ভিত্তিক হিসাব' && (
+                <ShareAccountingModule
+                  shareholders={shareholders}
+                  distributions={shareDistributions}
+                  accounts={accounts}
+                  projects={projects}
+                  onRefresh={loadErpData}
+                  onNotify={notify}
+                />
+              )}
 
-                    <div className="bg-white p-5 rounded-2xl border border-[#0B162C]/15 shadow-sm">
-                      <span className="text-xs font-bold text-[#0B162C]/70 block">
-                        বুকিং চুক্তিমূল্য
-                      </span>
-                      <p className="text-xl font-extrabold text-[#0B162C] mt-2 tabular-nums-bn">
-                        {formatExactBdtBengali(accountingSummary.totalBookingContractBdt)}
-                      </p>
-                    </div>
-
-                    <div className="bg-amber-50 p-5 rounded-2xl border-2 border-amber-400/50 shadow-sm">
-                      <span className="text-xs font-bold text-amber-900 block">
-                        গ্রাহকদের কাছে বকেয়া
-                      </span>
-                      <p className="text-xl font-extrabold text-amber-800 mt-2 tabular-nums-bn">
-                        {formatExactBdtBengali(accountingSummary.totalReceivableBdt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* New Voucher Entry Form */}
-                  <form
-                    onSubmit={handleAddVoucher}
-                    className="bg-white p-6 rounded-2xl border border-[#0B162C]/15 shadow-sm space-y-4"
-                  >
-                    <h3 className="text-lg font-extrabold text-[#0B162C]">
-                      নতুন আয় / ব্যয় ভাউচার এন্ট্রি (ERP Cashbook)
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold mb-1">লেনদেনের ধরন *</label>
-                        <select
-                          value={txType}
-                          onChange={(e) => setTxType(e.target.value as 'income' | 'expense')}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 font-bold text-sm"
-                        >
-                          <option value="income">আয় / জমা (Credit)</option>
-                          <option value="expense">ব্যয় / খরচ (Debit)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold mb-1">হিসাবের খাত *</label>
-                        <select
-                          value={txCategory}
-                          onChange={(e) => setTxCategory(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 text-sm"
-                        >
-                          <option value="বুকিং ও কিস্তি আদায়">বুকিং ও কিস্তি আদায়</option>
-                          <option value="কমার্শিয়াল স্পেস বিক্রি আদায়">কমার্শিয়াল স্পেস বিক্রি আদায়</option>
-                          <option value="ভূমি অধিগ্রহণ ও বালি ভরাট ব্যয়">ভূমি অধিগ্রহণ ও বালি ভরাট ব্যয়</option>
-                          <option value="নির্মাণ সামগ্রী (রড, সিমেন্ট ও পাথর)">নির্মাণ সামগ্রী (রড, সিমেন্ট ও পাথর)</option>
-                          <option value="অফিস বেতন ও প্রশাসনিক ব্যয়">অফিস বেতন ও প্রশাসনিক ব্যয়</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold mb-1">সংশ্লিষ্ট প্রজেক্ট</label>
-                        <select
-                          value={txProjectName}
-                          onChange={(e) => setTxProjectName(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 text-sm"
-                        >
-                          {projects.map((p) => (
-                            <option key={p.id} value={p.nameBn}>
-                              {p.nameBn}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold mb-1">টাকার পরিমাণ (BDT) *</label>
-                        <input
-                          type="number"
-                          required
-                          value={txAmount}
-                          onChange={(e) => setTxAmount(e.target.value)}
-                          placeholder="1500000"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 text-sm font-bold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-bold mb-1">ভাউচারের বিবরণ *</label>
-                        <input
-                          type="text"
-                          required
-                          value={txTitle}
-                          onChange={(e) => setTxTitle(e.target.value)}
-                          placeholder="বসুন্ধরা আবাসিক প্রকল্পের প্লট উন্নয়ন বাবদ বিল"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold mb-1">চেক / রেফারেন্স নং</label>
-                        <input
-                          type="text"
-                          value={txRef}
-                          onChange={(e) => setTxRef(e.target.value)}
-                          placeholder="CHK-88412"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#0B162C]/20 text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-extrabold text-sm cursor-pointer"
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      লেজারে ভাউচার সংরক্ষণ করুন
-                    </button>
-                  </form>
-
-                  {/* Full Ledger Table */}
-                  <div className="bg-white p-6 rounded-2xl border border-[#0B162C]/15 shadow-sm space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-lg font-extrabold text-[#0B162C]">
-                        কর্পোরেট একাউন্টিং লেজার ও ভাউচার স্টেটমেন্ট ({toBengaliDigits(erpTransactions.length)})
-                      </h3>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-sm">
-                        <thead>
-                          <tr className="border-b-2 border-[#0B162C]/15 text-[#0B162C]/70 font-bold">
-                            <th className="py-3 px-3">ভাউচার নং ও তারিখ</th>
-                            <th className="py-3 px-3">খাত ও প্রজেক্ট</th>
-                            <th className="py-3 px-3">বিবরণ</th>
-                            <th className="py-3 px-3 text-right">টাকার পরিমাণ</th>
-                            <th className="py-3 px-3 text-right">রিসিট</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#0B162C]/10">
-                          {erpTransactions.map((tx) => (
-                            <tr key={tx.id} className="hover:bg-[#F8F6F0]/70">
-                              <td className="py-3 px-3">
-                                <span className="font-mono font-bold text-xs block">{tx.voucherNo}</span>
-                                <span className="text-xs text-[#0B162C]/60">
-                                  {toBengaliDigits(tx.transactionDate)}
-                                </span>
-                              </td>
-                              <td className="py-3 px-3">
-                                <span className="font-bold block">{tx.categoryBn}</span>
-                                <span className="text-xs text-[#059669] font-semibold">
-                                  {tx.projectNameBn}
-                                </span>
-                              </td>
-                              <td className="py-3 px-3">
-                                <p className="font-semibold text-[#0B162C]">{tx.titleBn}</p>
-                                <p className="text-xs text-[#0B162C]/60">
-                                  মাধ্যম: {tx.paymentMethodBn}
-                                </p>
-                              </td>
-                              <td
-                                className={`py-3 px-3 text-right font-extrabold tabular-nums-bn ${
-                                  tx.type === 'income' ? 'text-emerald-700' : 'text-rose-700'
-                                }`}
-                              >
-                                {tx.type === 'income' ? '+' : '-'}{' '}
-                                {formatExactBdtBengali(tx.amountBdt)}
-                              </td>
-                              <td className="py-3 px-3 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => openReceiptForVoucher(tx)}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#0B162C] text-[#0B162C] hover:text-white text-xs font-bold transition-colors cursor-pointer"
-                                >
-                                  <Printer className="w-3.5 h-3.5" />
-                                  রিসিট
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
+              {/* TAB 2D: STAFF, HR & PAYROLL */}
+              {erpTab === 'স্টাফ ও বেতন (HR)' && (
+                <StaffPayrollModule
+                  staffMembers={staffMembers}
+                  salaryPayments={salaryPayments}
+                  accounts={accounts}
+                  onRefresh={loadErpData}
+                  onNotify={notify}
+                />
               )}
 
               {/* TAB 3: BOOKINGS */}
@@ -2450,16 +2349,17 @@ export const AdminCmsView: React.FC<{
             type="button"
             onClick={() => {
               setSystemMode('realestate_erp');
-              setErpTab('হিসাবরক্ষণ ও লেজার');
+              setErpTab('হিসাব ও ব্যাংক অ্যাকাউন্ট');
             }}
             className={`flex flex-col items-center justify-center gap-0.5 h-full rounded-xl transition-colors cursor-pointer ${
-              systemMode === 'realestate_erp' && erpTab === 'হিসাবরক্ষণ ও লেজার'
+              systemMode === 'realestate_erp' &&
+              (erpTab === 'হিসাব ও ব্যাংক অ্যাকাউন্ট' || erpTab === 'আয়-ব্যয় ও খরচ বিশ্লেষণ')
                 ? 'text-emerald-700 font-extrabold'
                 : 'text-slate-500 hover:text-[#0B162C] font-semibold'
             }`}
           >
             <Calculator className="w-5 h-5" />
-            <span className="text-[10px] leading-none">লেজার</span>
+            <span className="text-[10px] leading-none">হিসাব</span>
           </button>
 
           <button

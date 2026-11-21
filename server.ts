@@ -29,6 +29,16 @@ import {
   loginCustomerWithPassword,
   togglePublicWebsiteVisibility,
   createErpTransactionRecord,
+  createFinancialAccountRecord,
+  transferBetweenAccountsRecord,
+  createStaffMemberRecord,
+  updateStaffMemberRecord,
+  processStaffPayrollRecord,
+  createShareholderRecord,
+  distributeShareDividendsRecord,
+  authenticateRolePortal,
+  getShareholderPortalData,
+  getStaffPortalData,
   createAdminMoneyReceiptRecord,
 } from './src/db/repository.ts';
 import { requireAuth, AuthRequest } from './src/middleware/auth.ts';
@@ -266,6 +276,19 @@ async function startServer() {
     }
   });
 
+  app.post('/api/portal/pay/:id', async (req, res) => {
+    try {
+      const updated = await payInstallmentRecord(
+        Number(req.params.id),
+        String(req.body?.paymentMethodBn || 'ব্যাংক ট্রান্সফার / অনলাইন পেমেন্ট')
+      );
+      res.json({ payment: updated });
+    } catch (error: any) {
+      console.error('Error in POST /api/portal/pay/:id:', error);
+      res.status(400).json({ error: error.message || 'পেমেন্ট সম্পন্ন করতে সমস্যা হয়েছে।' });
+    }
+  });
+
   // Submit Complaint / Support Ticket from Customer Portal
   app.post('/api/portal/complaints', async (req, res) => {
     try {
@@ -325,6 +348,8 @@ async function startServer() {
       const {
         type,
         categoryBn,
+        costCenterBn,
+        accountId,
         projectId,
         projectNameBn,
         titleBn,
@@ -343,6 +368,8 @@ async function startServer() {
       const tx = await createErpTransactionRecord({
         type: type === 'expense' ? 'expense' : 'income',
         categoryBn: String(categoryBn || 'সাধারণ হিসাব'),
+        costCenterBn: String(costCenterBn || 'সাধারণ'),
+        accountId: Number(accountId || 0),
         projectId: Number(projectId || 0),
         projectNameBn: String(projectNameBn || 'সাধারণ কর্পোরেট হিসাব'),
         titleBn: String(titleBn),
@@ -358,6 +385,177 @@ async function startServer() {
     } catch (error: any) {
       console.error('Error in POST /api/admin/erp/transactions:', error);
       res.status(400).json({ error: error.message || 'ভাউচার সংরক্ষণে সমস্যা হয়েছে।' });
+    }
+  });
+
+  // Financial Accounts & Transfers
+  app.post('/api/admin/accounts', async (req, res) => {
+    try {
+      const { accountNameBn, accountType, bankNameBn, accountNumber, branchBn, openingBalanceBdt } = req.body;
+      if (!accountNameBn || !bankNameBn) {
+        return res.status(400).json({ error: 'অ্যাকাউন্টের নাম এবং ব্যাংকের নাম আবশ্যক।' });
+      }
+      const account = await createFinancialAccountRecord({
+        accountNameBn: String(accountNameBn),
+        accountType: accountType === 'cash' ? 'cash' : accountType === 'mfs' ? 'mfs' : 'bank',
+        bankNameBn: String(bankNameBn),
+        accountNumber: String(accountNumber || ''),
+        branchBn: String(branchBn || 'বনশ্রী শাখা, ঢাকা'),
+        openingBalanceBdt: Number(openingBalanceBdt || 0),
+      });
+      res.status(201).json({ account });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  app.post('/api/admin/accounts/transfer', async (req, res) => {
+    try {
+      const { fromAccountId, toAccountId, amountBdt, notesBn } = req.body;
+      const result = await transferBetweenAccountsRecord({
+        fromAccountId: Number(fromAccountId),
+        toAccountId: Number(toAccountId),
+        amountBdt: Number(amountBdt),
+        notesBn: String(notesBn || ''),
+      });
+      res.status(201).json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'ফান্ড ট্রান্সফার ব্যর্থ হয়েছে।' });
+    }
+  });
+
+  // Staff HR & Payroll
+  app.post('/api/admin/staff', async (req, res) => {
+    try {
+      const { nameBn, designationBn, departmentBn, phone, email, joiningDate, basicSalaryBdt, allowanceBdt, bankAccountBn } = req.body;
+      if (!nameBn || !designationBn || !basicSalaryBdt) {
+        return res.status(400).json({ error: 'স্টাফের নাম, পদবী এবং মূল বেতন আবশ্যক।' });
+      }
+      const staff = await createStaffMemberRecord({
+        nameBn: String(nameBn),
+        designationBn: String(designationBn),
+        departmentBn: String(departmentBn || 'প্রশাসন ও এইচআর'),
+        phone: String(phone || ''),
+        email: String(email || ''),
+        joiningDate: String(joiningDate || ''),
+        basicSalaryBdt: Number(basicSalaryBdt),
+        allowanceBdt: Number(allowanceBdt || 0),
+        bankAccountBn: String(bankAccountBn || ''),
+      });
+      res.status(201).json({ staff });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'স্টাফ যোগ করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  app.put('/api/admin/staff/:id', async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const staff = await updateStaffMemberRecord(id, {
+        attendanceStatusBn: req.body?.attendanceStatusBn,
+        statusBn: req.body?.statusBn,
+        basicSalaryBdt: typeof req.body?.basicSalaryBdt === 'number' ? req.body.basicSalaryBdt : undefined,
+        allowanceBdt: typeof req.body?.allowanceBdt === 'number' ? req.body.allowanceBdt : undefined,
+      });
+      res.json({ staff });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'স্টাফ তথ্য আপডেট ব্যর্থ হয়েছে।' });
+    }
+  });
+
+  app.post('/api/admin/payroll', async (req, res) => {
+    try {
+      const { staffId, salaryMonth, deductionBdt, accountId, paymentMethodBn } = req.body;
+      const result = await processStaffPayrollRecord({
+        staffId: staffId ? Number(staffId) : 0,
+        salaryMonth: String(salaryMonth || 'নভেম্বর ২০২৬'),
+        deductionBdt: Number(deductionBdt || 0),
+        accountId: Number(accountId || 2),
+        paymentMethodBn: String(paymentMethodBn || 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক)'),
+      });
+      res.status(201).json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'বেতন প্রক্রিয়া করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  // Shareholders & Share-Based Profit Distribution
+  app.post('/api/admin/shareholders', async (req, res) => {
+    try {
+      const { nameBn, designationOrRoleBn, phone, email, nidNumber, totalShares, sharePercent, committedCapitalBdt, paidCapitalBdt, projectScopeBn } = req.body;
+      if (!nameBn || !sharePercent) {
+        return res.status(400).json({ error: 'শেয়ারহোল্ডারের নাম ও শেয়ার শতাংশ (%) আবশ্যক।' });
+      }
+      const shareholder = await createShareholderRecord({
+        nameBn: String(nameBn),
+        designationOrRoleBn: String(designationOrRoleBn || 'শেয়ারহোল্ডার ও পার্টনার'),
+        phone: String(phone || ''),
+        email: String(email || ''),
+        nidNumber: String(nidNumber || ''),
+        totalShares: Number(totalShares || 100),
+        sharePercent: Number(sharePercent),
+        committedCapitalBdt: Number(committedCapitalBdt || 0),
+        paidCapitalBdt: Number(paidCapitalBdt || 0),
+        projectScopeBn: String(projectScopeBn || 'H & H Homes কর্পোরেট ইক্যুইটি'),
+      });
+      res.status(201).json({ shareholder });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'শেয়ারহোল্ডার যোগ করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  app.post('/api/admin/shareholders/distribute', async (req, res) => {
+    try {
+      const { titleBn, periodBn, projectNameBn, totalProfitBdt, accountId, paymentMethodBn } = req.body;
+      if (!titleBn || !totalProfitBdt) {
+        return res.status(400).json({ error: 'লভ্যাংশের শিরোনাম এবং বণ্টনযোগ্য মুনাফার পরিমাণ আবশ্যক।' });
+      }
+      const result = await distributeShareDividendsRecord({
+        titleBn: String(titleBn),
+        periodBn: String(periodBn || '২০২৬ অর্থবছর'),
+        projectNameBn: String(projectNameBn || 'সকল প্রকল্প সমন্বিত হিসাব'),
+        totalProfitBdt: Number(totalProfitBdt),
+        accountId: Number(accountId || 2),
+        paymentMethodBn: String(paymentMethodBn || 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক পিএলসি)'),
+      });
+      res.status(201).json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'লভ্যাংশ বিতরণ করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  // Dedicated Role-Based Portals Authentication & Scoped Data
+  app.post('/api/role-login', async (req, res) => {
+    try {
+      const { role, identifier, password } = req.body;
+      const session = await authenticateRolePortal({
+        role,
+        identifier: String(identifier || ''),
+        password: String(password || ''),
+      });
+      res.json({ session });
+    } catch (error: any) {
+      res.status(401).json({ error: error.message || 'লগইন তথ্য সঠিক নয়।' });
+    }
+  });
+
+  app.get('/api/shareholder/portal', async (req, res) => {
+    try {
+      const id = Number(req.query.id || 1);
+      const data = await getShareholderPortalData(id);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'শেয়ারহোল্ডার পোর্টাল লোড করতে সমস্যা হয়েছে।' });
+    }
+  });
+
+  app.get('/api/staff/portal', async (req, res) => {
+    try {
+      const id = Number(req.query.id || 1);
+      const data = await getStaffPortalData(id);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'স্টাফ পোর্টাল লোড করতে সমস্যা হয়েছে।' });
     }
   });
 

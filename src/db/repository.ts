@@ -1,4 +1,4 @@
-import { db } from './index.ts';
+import { db, pool } from './index.ts';
 import {
   users,
   siteSettings,
@@ -9,6 +9,11 @@ import {
   bookings,
   payments,
   erpTransactions,
+  financialAccounts,
+  staffMembers,
+  salaryPayments,
+  shareholders,
+  shareDistributions,
   inquiries,
   complaints,
   notifications,
@@ -23,6 +28,7 @@ import {
   generateReceiptNumber,
   generateVoucherNumber,
   calculateInstallmentPlan,
+  calculateShareDistribution,
   toEnglishDigits,
 } from '../utils/bengaliLogic.ts';
 
@@ -936,6 +942,292 @@ export async function ensureSeeded() {
       ]);
     }
 
+    // 11. Seed Financial Accounts (Cash, Bank & MFS)
+    const existingAccounts = await db.select().from(financialAccounts);
+    if (existingAccounts.length === 0) {
+      await db.insert(financialAccounts).values([
+        {
+          accountCode: 'ACC-CASH-01',
+          accountNameBn: 'প্রধান ক্যাশ কাউন্টার (বনশ্রী অফিস)',
+          accountType: 'cash',
+          bankNameBn: 'কর্পোরেট ক্যাশ ভল্ট',
+          accountNumber: 'CASH-BONOSREE-01',
+          branchBn: 'রোড: ৪, ব্লক: সি, বনশ্রী, ঢাকা',
+          openingBalanceBdt: 650000,
+          currentBalanceBdt: 825000,
+          statusBn: 'সক্রিয়',
+        },
+        {
+          accountCode: 'ACC-IBBL-02',
+          accountNameBn: 'ইসলামী ব্যাংক পিএলসি — কর্পোরেট',
+          accountType: 'bank',
+          bankNameBn: 'ইসলামী ব্যাংক বাংলাদেশ পিএলসি',
+          accountNumber: '20502140100458912',
+          branchBn: 'বনশ্রী শাখা, ঢাকা',
+          openingBalanceBdt: 6500000,
+          currentBalanceBdt: 7111111,
+          statusBn: 'সক্রিয়',
+        },
+        {
+          accountCode: 'ACC-CITY-03',
+          accountNameBn: 'সিটি ব্যাংক পিএলসি — প্রজেক্ট এসক্রো',
+          accountType: 'bank',
+          bankNameBn: 'দি সিটি ব্যাংক পিএলসি',
+          accountNumber: '1102893400192',
+          branchBn: 'বসুন্ধরা শাখা, ঢাকা',
+          openingBalanceBdt: 4800000,
+          currentBalanceBdt: 5450000,
+          statusBn: 'সক্রিয়',
+        },
+        {
+          accountCode: 'ACC-BKASH-04',
+          accountNameBn: 'কর্পোরেট বিকাশ ও নগদ মার্চেন্ট',
+          accountType: 'mfs',
+          bankNameBn: 'বিকাশ / নগদ বিজনেস',
+          accountNumber: '01711223344',
+          branchBn: 'ডিজিটাল কালেকশন ওয়ালেট',
+          openingBalanceBdt: 250000,
+          currentBalanceBdt: 345000,
+          statusBn: 'সক্রিয়',
+        },
+      ]);
+    }
+
+    // 12. Seed Staff Members (HR & Payroll)
+    const existingStaff = await db.select().from(staffMembers);
+    let seededStaff = existingStaff;
+    if (existingStaff.length === 0) {
+      seededStaff = await db
+        .insert(staffMembers)
+        .values([
+          {
+            employeeCode: 'HH-EMP-001',
+            nameBn: 'মোঃ সাইফুল ইসলাম (FCA-পার্ট)',
+            designationBn: 'প্রধান হিসাব ও ফাইন্যান্স ম্যানেজার',
+            departmentBn: 'হিসাব ও অর্থ',
+            phone: '01711000101',
+            email: 'accounts@hhhomesbd.com',
+            joiningDate: '2022-03-01',
+            basicSalaryBdt: 65000,
+            allowanceBdt: 20000,
+            bankAccountBn: 'ইসলামী ব্যাংক #2050-98112',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            employeeCode: 'HH-EMP-002',
+            nameBn: 'প্রকৌশলী মোঃ রাশেদুল হক',
+            designationBn: 'সিনিয়র প্রজেক্ট ইঞ্জিনিয়ার (সিভিল)',
+            departmentBn: 'প্রকৌশল ও সাইট',
+            phone: '01711000201',
+            email: 'staff@hhhomesbd.com',
+            joiningDate: '2023-01-15',
+            basicSalaryBdt: 75000,
+            allowanceBdt: 25000,
+            bankAccountBn: 'সিটি ব্যাংক #1102-77211',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            employeeCode: 'HH-EMP-003',
+            nameBn: 'সাবরিনা সুলতানা মিম',
+            designationBn: 'সিনিয়র সেলস ও ক্লায়েন্ট রিলেশন অফিসার',
+            departmentBn: 'বিক্রয় ও বিপণন',
+            phone: '01711000202',
+            email: 'sales@hhhomesbd.com',
+            joiningDate: '2023-08-10',
+            basicSalaryBdt: 42000,
+            allowanceBdt: 13000,
+            bankAccountBn: 'ইসলামী ব্যাংক #2050-66301',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            employeeCode: 'HH-EMP-004',
+            nameBn: 'অ্যাডভোকেট নাজমুল হুদা',
+            designationBn: 'লিগ্যাল ও ভূমি নিবন্ধন কর্মকর্তা',
+            departmentBn: 'আইনি ও দলিল',
+            phone: '01711000203',
+            email: 'legal@hhhomesbd.com',
+            joiningDate: '2022-11-01',
+            basicSalaryBdt: 52000,
+            allowanceBdt: 15000,
+            bankAccountBn: 'সিটি ব্যাংক #1102-44219',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            employeeCode: 'HH-EMP-005',
+            nameBn: 'মোঃ জহিরুল ইসলাম',
+            designationBn: 'সাইট সুপারভাইজার (বসুন্ধরা প্লট প্রকল্প)',
+            departmentBn: 'প্রকৌশল ও সাইট',
+            phone: '01711000204',
+            email: 'site@hhhomesbd.com',
+            joiningDate: '2024-02-01',
+            basicSalaryBdt: 28000,
+            allowanceBdt: 7000,
+            bankAccountBn: 'বিকাশ #01711000204',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            employeeCode: 'HH-EMP-006',
+            nameBn: 'তাসনিম তাবাসসুম',
+            designationBn: 'এইচআর ও অ্যাডমিন এক্সিকিউটিভ',
+            departmentBn: 'প্রশাসন ও এইচআর',
+            phone: '01711000205',
+            email: 'hr@hhhomesbd.com',
+            joiningDate: '2024-05-12',
+            basicSalaryBdt: 36000,
+            allowanceBdt: 9000,
+            bankAccountBn: 'ইসলামী ব্যাংক #2050-55410',
+            attendanceStatusBn: 'উপস্থিত',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+        ])
+        .returning();
+    }
+
+    // 13. Seed Initial Salary Payments
+    const existingSalaries = await db.select().from(salaryPayments);
+    if (existingSalaries.length === 0 && seededStaff.length >= 2) {
+      await db.insert(salaryPayments).values([
+        {
+          slipNumber: 'HH-PAY-2026-0101',
+          staffId: seededStaff[0].id,
+          staffNameBn: seededStaff[0].nameBn,
+          departmentBn: seededStaff[0].departmentBn,
+          salaryMonth: 'অক্টোবর ২০২৬',
+          basicSalaryBdt: seededStaff[0].basicSalaryBdt,
+          allowanceBdt: seededStaff[0].allowanceBdt,
+          deductionBdt: 0,
+          netSalaryBdt: seededStaff[0].basicSalaryBdt + seededStaff[0].allowanceBdt,
+          accountId: 2,
+          paymentMethodBn: 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক)',
+          paidDate: '2026-10-31',
+          statusBn: 'পরিশোধিত',
+        },
+        {
+          slipNumber: 'HH-PAY-2026-0102',
+          staffId: seededStaff[1].id,
+          staffNameBn: seededStaff[1].nameBn,
+          departmentBn: seededStaff[1].departmentBn,
+          salaryMonth: 'অক্টোবর ২০২৬',
+          basicSalaryBdt: seededStaff[1].basicSalaryBdt,
+          allowanceBdt: seededStaff[1].allowanceBdt,
+          deductionBdt: 0,
+          netSalaryBdt: seededStaff[1].basicSalaryBdt + seededStaff[1].allowanceBdt,
+          accountId: 2,
+          paymentMethodBn: 'ব্যাংক ট্রান্সফার (সিটি ব্যাংক)',
+          paidDate: '2026-10-31',
+          statusBn: 'পরিশোধিত',
+        },
+      ]);
+    }
+
+    // 14. Seed Shareholders & Partner Equity
+    const existingHolders = await db.select().from(shareholders);
+    let seededHolders = existingHolders;
+    if (existingHolders.length === 0) {
+      seededHolders = await db
+        .insert(shareholders)
+        .values([
+          {
+            shareholderCode: 'HH-SH-001',
+            nameBn: 'আলহাজ্ব প্রকৌশলী মাহমুদুর রহমান চৌধুরী',
+            designationOrRoleBn: 'চেয়ারম্যান ও প্রধান উদ্যোক্তা শেয়ারহোল্ডার',
+            phone: '01711000301',
+            email: 'partner@hhhomesbd.com',
+            nidNumber: '1968123450011',
+            totalShares: 3500,
+            sharePercent: 35,
+            committedCapitalBdt: 35000000,
+            paidCapitalBdt: 35000000,
+            totalDividendReceivedBdt: 1050000,
+            projectScopeBn: 'সকল প্রকল্প (কর্পোরেট মূল শেয়ার)',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            shareholderCode: 'HH-SH-002',
+            nameBn: 'মোঃ তানভীর আহমেদ হাসান',
+            designationOrRoleBn: 'ব্যবস্থাপনা পরিচালক ও ইক্যুইটি পার্টনার',
+            phone: '01711000302',
+            email: 'tanvir.partner@hhhomesbd.com',
+            nidNumber: '1976123450022',
+            totalShares: 3000,
+            sharePercent: 30,
+            committedCapitalBdt: 30000000,
+            paidCapitalBdt: 30000000,
+            totalDividendReceivedBdt: 900000,
+            projectScopeBn: 'সকল প্রকল্প (কর্পোরেট মূল শেয়ার)',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            shareholderCode: 'HH-SH-003',
+            nameBn: 'স্থপতি ফারহানা ইয়াসমিন চৌধুরী',
+            designationOrRoleBn: 'পরিচালক ও জমি উন্নয়ন শেয়ারহোল্ডার',
+            phone: '01711000303',
+            email: 'farhana.partner@hhhomesbd.com',
+            nidNumber: '1981123450033',
+            totalShares: 2000,
+            sharePercent: 20,
+            committedCapitalBdt: 20000000,
+            paidCapitalBdt: 20000000,
+            totalDividendReceivedBdt: 600000,
+            projectScopeBn: 'এইচ অ্যান্ড এইচ সিগনেচার টাওয়ার (বনশ্রী)',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+          {
+            shareholderCode: 'HH-SH-004',
+            nameBn: 'ড. কামরুল হাসান এফসিএ',
+            designationOrRoleBn: 'পরিচালক (অর্থ) ও বিনিয়োগ অংশীদার',
+            phone: '01711000304',
+            email: 'kamrul.partner@hhhomesbd.com',
+            nidNumber: '1974123450044',
+            totalShares: 1500,
+            sharePercent: 15,
+            committedCapitalBdt: 15000000,
+            paidCapitalBdt: 15000000,
+            totalDividendReceivedBdt: 450000,
+            projectScopeBn: 'এইচ অ্যান্ড এইচ বসুন্ধরা গ্রিন টাউনশিপ',
+            statusBn: 'সক্রিয়',
+            passwordHash: '123456',
+          },
+        ])
+        .returning();
+    }
+
+    // 15. Seed Share Profit Distributions
+    const existingDistributions = await db.select().from(shareDistributions);
+    if (existingDistributions.length === 0 && seededHolders.length >= 4) {
+      await db.insert(shareDistributions).values(
+        seededHolders.map((h, idx) => ({
+          distributionCode: `HH-DIV-2026-010${idx + 1}`,
+          titleBn: '৩য় প্রান্তিক (Q3-২০২৬) নিট মুনাফা লভ্যাংশ বিতরণ',
+          periodBn: 'জুলাই – সেপ্টেম্বর ২০২৬',
+          projectNameBn: 'সকল প্রকল্প সমন্বিত হিসাব',
+          totalProfitBdt: 3000000,
+          shareholderId: h.id,
+          shareholderNameBn: h.nameBn,
+          sharePercent: h.sharePercent,
+          dividendAmountBdt: Math.round((3000000 * h.sharePercent) / 100),
+          accountId: 2,
+          paymentMethodBn: 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক পিএলসি)',
+          distributedDate: '2026-10-15',
+          statusBn: 'বিতরণকৃত',
+        }))
+      );
+    }
+
     seedCompleted = true;
   } catch (error) {
     console.error('Error seeding initial database content:', error);
@@ -1318,6 +1610,11 @@ export async function getAdminErpData() {
       bookingRows,
       paymentRows,
       transactionRows,
+      accountRows,
+      staffRows,
+      salaryRows,
+      shareholderRows,
+      shareDistributionRows,
       inquiryRows,
       complaintRows,
       galleryRows,
@@ -1333,6 +1630,11 @@ export async function getAdminErpData() {
       db.select().from(bookings).orderBy(desc(bookings.id)),
       db.select().from(payments).orderBy(desc(payments.id)),
       db.select().from(erpTransactions).orderBy(desc(erpTransactions.id)),
+      db.select().from(financialAccounts).orderBy(financialAccounts.id),
+      db.select().from(staffMembers).orderBy(staffMembers.id),
+      db.select().from(salaryPayments).orderBy(desc(salaryPayments.id)),
+      db.select().from(shareholders).orderBy(desc(shareholders.sharePercent)),
+      db.select().from(shareDistributions).orderBy(desc(shareDistributions.id)),
       db.select().from(inquiries).orderBy(desc(inquiries.id)),
       db.select().from(complaints).orderBy(desc(complaints.id)),
       db.select().from(galleryItems).orderBy(desc(galleryItems.id)),
@@ -1350,6 +1652,11 @@ export async function getAdminErpData() {
       bookings: bookingRows,
       payments: paymentRows,
       erpTransactions: transactionRows,
+      accounts: accountRows,
+      staffMembers: staffRows,
+      salaryPayments: salaryRows,
+      shareholders: shareholderRows,
+      shareDistributions: shareDistributionRows,
       inquiries: inquiryRows,
       complaints: complaintRows,
       gallery: galleryRows,
@@ -1400,6 +1707,8 @@ export async function togglePublicWebsiteVisibility(input: {
 export async function createErpTransactionRecord(input: {
   type: 'income' | 'expense';
   categoryBn: string;
+  costCenterBn?: string;
+  accountId?: number;
   projectId?: number;
   projectNameBn?: string;
   titleBn: string;
@@ -1413,17 +1722,23 @@ export async function createErpTransactionRecord(input: {
   try {
     const existing = await db.select().from(erpTransactions);
     const voucherNo = generateVoucherNumber(1001 + existing.length + Math.floor(Math.random() * 500), 2026);
+    const amount = Math.round(Number(input.amountBdt || 0));
+    const txType = input.type === 'expense' ? 'expense' : 'income';
+    const accountId = Number(input.accountId || 0);
+
     const inserted = await db
       .insert(erpTransactions)
       .values({
         voucherNo,
         transactionDate: input.transactionDate || new Date().toISOString().split('T')[0],
-        type: input.type === 'expense' ? 'expense' : 'income',
+        type: txType,
         categoryBn: input.categoryBn.trim(),
+        costCenterBn: (input.costCenterBn || 'সাধারণ').trim(),
+        accountId,
         projectId: Number(input.projectId || 0),
         projectNameBn: (input.projectNameBn || 'সাধারণ কর্পোরেট হিসাব').trim(),
         titleBn: input.titleBn.trim(),
-        amountBdt: Number(input.amountBdt),
+        amountBdt: amount,
         paymentMethodBn: (input.paymentMethodBn || 'ব্যাংক ট্রান্সফার').trim(),
         referenceNo: (input.referenceNo || '').trim(),
         recordedByBn: (input.recordedByBn || 'প্রধান হিসাবরক্ষক').trim(),
@@ -1431,11 +1746,524 @@ export async function createErpTransactionRecord(input: {
       })
       .returning();
 
+    if (accountId > 0 && amount > 0) {
+      const accRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, accountId));
+      if (accRows.length > 0) {
+        const delta = txType === 'income' ? amount : -amount;
+        await db
+          .update(financialAccounts)
+          .set({ currentBalanceBdt: accRows[0].currentBalanceBdt + delta })
+          .where(eq(financialAccounts.id, accountId));
+      }
+    }
+
     return inserted[0];
   } catch (error: any) {
     console.error('Error in createErpTransactionRecord:', error);
     throw new Error('ইআরপি ভাউচার সংরক্ষণে সমস্যা হয়েছে।', { cause: error });
   }
+}
+
+export async function createFinancialAccountRecord(input: {
+  accountNameBn: string;
+  accountType: 'cash' | 'bank' | 'mfs';
+  bankNameBn: string;
+  accountNumber?: string;
+  branchBn?: string;
+  openingBalanceBdt: number;
+}) {
+  try {
+    const existing = await db.select().from(financialAccounts);
+    const accountCode = `ACC-${input.accountType.toUpperCase()}-${String(existing.length + 1).padStart(2, '0')}-${Math.floor(10 + Math.random() * 89)}`;
+    const bal = Math.round(Number(input.openingBalanceBdt || 0));
+    const inserted = await db
+      .insert(financialAccounts)
+      .values({
+        accountCode,
+        accountNameBn: input.accountNameBn.trim(),
+        accountType: input.accountType,
+        bankNameBn: input.bankNameBn.trim(),
+        accountNumber: (input.accountNumber || '').trim(),
+        branchBn: (input.branchBn || 'বনশ্রী, ঢাকা').trim(),
+        openingBalanceBdt: bal,
+        currentBalanceBdt: bal,
+        statusBn: 'সক্রিয়',
+      })
+      .returning();
+    return inserted[0];
+  } catch (error: any) {
+    console.error('Error in createFinancialAccountRecord:', error);
+    throw new Error('অ্যাকাউন্ট যোগ করতে সমস্যা হয়েছে।', { cause: error });
+  }
+}
+
+export async function transferBetweenAccountsRecord(input: {
+  fromAccountId: number;
+  toAccountId: number;
+  amountBdt: number;
+  notesBn?: string;
+}) {
+  try {
+    const amount = Math.round(Number(input.amountBdt || 0));
+    if (amount <= 0) throw new Error('ট্রান্সফার পরিমাণ অবশ্যই শূন্যের চেয়ে বেশি হতে হবে।');
+    if (input.fromAccountId === input.toAccountId) {
+      throw new Error('উৎস এবং গন্তব্য অ্যাকাউন্ট আলাদা হতে হবে।');
+    }
+
+    const fromRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, input.fromAccountId));
+    const toRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, input.toAccountId));
+    if (fromRows.length === 0 || toRows.length === 0) {
+      throw new Error('নির্বাচিত অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।');
+    }
+
+    const fromAcc = fromRows[0];
+    const toAcc = toRows[0];
+
+    await db
+      .update(financialAccounts)
+      .set({ currentBalanceBdt: fromAcc.currentBalanceBdt - amount })
+      .where(eq(financialAccounts.id, fromAcc.id));
+    await db
+      .update(financialAccounts)
+      .set({ currentBalanceBdt: toAcc.currentBalanceBdt + amount })
+      .where(eq(financialAccounts.id, toAcc.id));
+
+    const existingTx = await db.select().from(erpTransactions);
+    const today = new Date().toISOString().split('T')[0];
+    const vOut = generateVoucherNumber(1300 + existingTx.length + Math.floor(Math.random() * 200), 2026);
+    await db.insert(erpTransactions).values({
+      voucherNo: vOut,
+      transactionDate: today,
+      type: 'expense',
+      categoryBn: 'অ্যাকাউন্ট ফান্ড ট্রান্সফার',
+      costCenterBn: 'কর্পোরেট ট্রেজারি',
+      accountId: fromAcc.id,
+      projectId: 0,
+      projectNameBn: 'কর্পোরেট ফান্ড ট্রান্সফার',
+      titleBn: `ফান্ড ট্রান্সফার: ${fromAcc.accountNameBn} → ${toAcc.accountNameBn}`,
+      amountBdt: amount,
+      paymentMethodBn: `${fromAcc.bankNameBn} → ${toAcc.bankNameBn}`,
+      referenceNo: vOut,
+      recordedByBn: 'প্রধান হিসাবরক্ষক',
+      notesBn: input.notesBn || 'আন্তঃঅ্যাকাউন্ট তহবিল স্থানান্তর।',
+    });
+
+    return { ok: true };
+  } catch (error: any) {
+    console.error('Error in transferBetweenAccountsRecord:', error);
+    throw new Error(error.message || 'ফান্ড ট্রান্সফার ব্যর্থ হয়েছে।', { cause: error });
+  }
+}
+
+export async function createStaffMemberRecord(input: {
+  nameBn: string;
+  designationBn: string;
+  departmentBn: string;
+  phone: string;
+  email: string;
+  joiningDate?: string;
+  basicSalaryBdt: number;
+  allowanceBdt?: number;
+  bankAccountBn?: string;
+}) {
+  try {
+    const existing = await db.select().from(staffMembers);
+    const employeeCode = `HH-EMP-${String(existing.length + 1).padStart(3, '0')}-${Math.floor(10 + Math.random() * 89)}`;
+    const inserted = await db
+      .insert(staffMembers)
+      .values({
+        employeeCode,
+        nameBn: input.nameBn.trim(),
+        designationBn: input.designationBn.trim(),
+        departmentBn: input.departmentBn.trim(),
+        phone: input.phone.trim(),
+        email: input.email.trim().toLowerCase(),
+        joiningDate: input.joiningDate || new Date().toISOString().split('T')[0],
+        basicSalaryBdt: Math.round(Number(input.basicSalaryBdt || 0)),
+        allowanceBdt: Math.round(Number(input.allowanceBdt || 0)),
+        bankAccountBn: (input.bankAccountBn || '').trim(),
+        attendanceStatusBn: 'উপস্থিত',
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      })
+      .returning();
+    return inserted[0];
+  } catch (error: any) {
+    console.error('Error in createStaffMemberRecord:', error);
+    throw new Error('নতুন স্টাফ সংরক্ষণে সমস্যা হয়েছে।', { cause: error });
+  }
+}
+
+export async function updateStaffMemberRecord(
+  id: number,
+  updates: { attendanceStatusBn?: string; statusBn?: string; basicSalaryBdt?: number; allowanceBdt?: number }
+) {
+  try {
+    const updated = await db
+      .update(staffMembers)
+      .set({
+        ...(updates.attendanceStatusBn ? { attendanceStatusBn: updates.attendanceStatusBn } : {}),
+        ...(updates.statusBn ? { statusBn: updates.statusBn } : {}),
+        ...(typeof updates.basicSalaryBdt === 'number' ? { basicSalaryBdt: updates.basicSalaryBdt } : {}),
+        ...(typeof updates.allowanceBdt === 'number' ? { allowanceBdt: updates.allowanceBdt } : {}),
+      })
+      .where(eq(staffMembers.id, id))
+      .returning();
+    return updated[0];
+  } catch (error: any) {
+    console.error('Error in updateStaffMemberRecord:', error);
+    throw new Error('স্টাফ তথ্য আপডেট করতে সমস্যা হয়েছে।', { cause: error });
+  }
+}
+
+export async function processStaffPayrollRecord(input: {
+  staffId?: number; // If omitted or 0, run payroll for all active staff
+  salaryMonth: string;
+  deductionBdt?: number;
+  accountId?: number;
+  paymentMethodBn?: string;
+}) {
+  try {
+    const targetList = input.staffId
+      ? await db.select().from(staffMembers).where(eq(staffMembers.id, Number(input.staffId)))
+      : await db.select().from(staffMembers);
+
+    const activeStaff = targetList.filter((s) => s.statusBn !== 'অব্যাহতিপ্রাপ্ত');
+    if (activeStaff.length === 0) throw new Error('বেতন প্রদানের জন্য কোনো সক্রিয় স্টাফ পাওয়া যায়নি।');
+
+    const today = new Date().toISOString().split('T')[0];
+    const existingSlips = await db.select().from(salaryPayments);
+    const existingTx = await db.select().from(erpTransactions);
+    const accountId = Number(input.accountId || 2);
+    const methodBn = (input.paymentMethodBn || 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক)').trim();
+
+    const createdSlips = [];
+    let totalPaidNow = 0;
+
+    for (let i = 0; i < activeStaff.length; i++) {
+      const st = activeStaff[i];
+      const ded = input.staffId ? Math.max(0, Math.round(Number(input.deductionBdt || 0))) : 0;
+      const net = Math.max(0, st.basicSalaryBdt + st.allowanceBdt - ded);
+      const slipNumber = `HH-PAY-2026-${String(existingSlips.length + i + 105).padStart(4, '0')}-${Math.floor(10 + Math.random() * 89)}`;
+      const slipRows = await db
+        .insert(salaryPayments)
+        .values({
+          slipNumber,
+          staffId: st.id,
+          staffNameBn: st.nameBn,
+          departmentBn: st.departmentBn,
+          salaryMonth: input.salaryMonth,
+          basicSalaryBdt: st.basicSalaryBdt,
+          allowanceBdt: st.allowanceBdt,
+          deductionBdt: ded,
+          netSalaryBdt: net,
+          accountId,
+          paymentMethodBn: methodBn,
+          paidDate: today,
+          statusBn: 'পরিশোধিত',
+        })
+        .returning();
+      createdSlips.push(slipRows[0]);
+      totalPaidNow += net;
+    }
+
+    const voucherNo = generateVoucherNumber(1400 + existingTx.length + Math.floor(Math.random() * 300), 2026);
+    await db.insert(erpTransactions).values({
+      voucherNo,
+      transactionDate: today,
+      type: 'expense',
+      categoryBn: 'অফিস বেতন ও প্রশাসনিক ব্যয়',
+      costCenterBn: 'স্টাফ ও পেরোল বিভাগ',
+      accountId,
+      projectId: 0,
+      projectNameBn: 'কর্পোরেট এইচআর ও পেরোল',
+      titleBn: `${input.salaryMonth} মাসের স্টাফ বেতন পরিশোধ (${activeStaff.length} জন)`,
+      amountBdt: totalPaidNow,
+      paymentMethodBn: methodBn,
+      referenceNo: createdSlips[0]?.slipNumber || voucherNo,
+      recordedByBn: 'এইচআর ও হিসাব বিভাগ',
+      notesBn: 'স্বয়ংক্রিয় পেরোল রান থেকে বেতন ভাউচার তৈরি।',
+    });
+
+    const accRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, accountId));
+    if (accRows.length > 0) {
+      await db
+        .update(financialAccounts)
+        .set({ currentBalanceBdt: accRows[0].currentBalanceBdt - totalPaidNow })
+        .where(eq(financialAccounts.id, accountId));
+    }
+
+    return { slips: createdSlips, totalPaidBdt: totalPaidNow };
+  } catch (error: any) {
+    console.error('Error in processStaffPayrollRecord:', error);
+    throw new Error(error.message || 'বেতন পরিশোধ প্রক্রিয়া ব্যর্থ হয়েছে।', { cause: error });
+  }
+}
+
+export async function createShareholderRecord(input: {
+  nameBn: string;
+  designationOrRoleBn: string;
+  phone: string;
+  email: string;
+  nidNumber?: string;
+  totalShares: number;
+  sharePercent: number;
+  committedCapitalBdt: number;
+  paidCapitalBdt: number;
+  projectScopeBn?: string;
+}) {
+  try {
+    const existing = await db.select().from(shareholders);
+    const code = `HH-SH-${String(existing.length + 1).padStart(3, '0')}-${Math.floor(10 + Math.random() * 89)}`;
+    const inserted = await db
+      .insert(shareholders)
+      .values({
+        shareholderCode: code,
+        nameBn: input.nameBn.trim(),
+        designationOrRoleBn: input.designationOrRoleBn.trim(),
+        phone: input.phone.trim(),
+        email: input.email.trim().toLowerCase(),
+        nidNumber: (input.nidNumber || '').trim(),
+        totalShares: Math.round(Number(input.totalShares || 0)),
+        sharePercent: Math.round(Number(input.sharePercent || 0)),
+        committedCapitalBdt: Math.round(Number(input.committedCapitalBdt || 0)),
+        paidCapitalBdt: Math.round(Number(input.paidCapitalBdt || 0)),
+        totalDividendReceivedBdt: 0,
+        projectScopeBn: (input.projectScopeBn || 'H & H Homes কর্পোরেট ইক্যুইটি').trim(),
+        statusBn: 'সক্রিয়',
+        passwordHash: '123456',
+      })
+      .returning();
+    return inserted[0];
+  } catch (error: any) {
+    console.error('Error in createShareholderRecord:', error);
+    throw new Error('শেয়ারহোল্ডার নিবন্ধনে সমস্যা হয়েছে।', { cause: error });
+  }
+}
+
+export async function distributeShareDividendsRecord(input: {
+  titleBn: string;
+  periodBn: string;
+  projectNameBn: string;
+  totalProfitBdt: number;
+  accountId?: number;
+  paymentMethodBn?: string;
+}) {
+  try {
+    const allHolders = await db.select().from(shareholders);
+    const calc = calculateShareDistribution(input.totalProfitBdt, allHolders);
+    if (calc.allocations.length === 0) {
+      throw new Error('বিতরণের জন্য কোনো সক্রিয় শেয়ারহোল্ডার পাওয়া যায়নি।');
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const existingDist = await db.select().from(shareDistributions);
+    const existingTx = await db.select().from(erpTransactions);
+    const accountId = Number(input.accountId || 2);
+    const methodBn = (input.paymentMethodBn || 'ব্যাংক ট্রান্সফার (ইসলামী ব্যাংক পিএলসি)').trim();
+
+    const created = [];
+    for (let i = 0; i < calc.allocations.length; i++) {
+      const alloc = calc.allocations[i];
+      const distributionCode = `HH-DIV-2026-${String(existingDist.length + i + 105).padStart(4, '0')}-${Math.floor(10 + Math.random() * 89)}`;
+      const rows = await db
+        .insert(shareDistributions)
+        .values({
+          distributionCode,
+          titleBn: input.titleBn.trim(),
+          periodBn: input.periodBn.trim(),
+          projectNameBn: input.projectNameBn.trim(),
+          totalProfitBdt: calc.totalProfitBdt,
+          shareholderId: alloc.shareholderId,
+          shareholderNameBn: alloc.nameBn,
+          sharePercent: alloc.sharePercent,
+          dividendAmountBdt: alloc.dividendAmountBdt,
+          accountId,
+          paymentMethodBn: methodBn,
+          distributedDate: today,
+          statusBn: 'বিতরণকৃত',
+        })
+        .returning();
+      created.push(rows[0]);
+
+      const holderRow = allHolders.find((h) => h.id === alloc.shareholderId);
+      if (holderRow) {
+        await db
+          .update(shareholders)
+          .set({
+            totalDividendReceivedBdt: holderRow.totalDividendReceivedBdt + alloc.dividendAmountBdt,
+          })
+          .where(eq(shareholders.id, holderRow.id));
+      }
+    }
+
+    const voucherNo = generateVoucherNumber(1500 + existingTx.length + Math.floor(Math.random() * 300), 2026);
+    await db.insert(erpTransactions).values({
+      voucherNo,
+      transactionDate: today,
+      type: 'expense',
+      categoryBn: 'শেয়ারহোল্ডার লভ্যাংশ বিতরণ',
+      costCenterBn: 'ইক্যুইটি ও শেয়ার লভ্যাংশ',
+      accountId,
+      projectId: 0,
+      projectNameBn: input.projectNameBn.trim(),
+      titleBn: `${input.titleBn.trim()} — মোট লভ্যাংশ বিতরণ`,
+      amountBdt: calc.totalAllocatedDividendBdt,
+      paymentMethodBn: methodBn,
+      referenceNo: created[0]?.distributionCode || voucherNo,
+      recordedByBn: 'পরিচালক (অর্থ ও হিসাব)',
+      notesBn: `${calc.allocations.length} জন শেয়ারহোল্ডারের মধ্যে আনুপাতিক লভ্যাংশ প্রদান।`,
+    });
+
+    const accRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, accountId));
+    if (accRows.length > 0) {
+      await db
+        .update(financialAccounts)
+        .set({ currentBalanceBdt: accRows[0].currentBalanceBdt - calc.totalAllocatedDividendBdt })
+        .where(eq(financialAccounts.id, accountId));
+    }
+
+    return { distributions: created, totalDistributedBdt: calc.totalAllocatedDividendBdt };
+  } catch (error: any) {
+    console.error('Error in distributeShareDividendsRecord:', error);
+    throw new Error(error.message || 'লভ্যাংশ বিতরণে সমস্যা হয়েছে।', { cause: error });
+  }
+}
+
+export async function authenticateRolePortal(input: {
+  role: 'accounts' | 'staff' | 'shareholder' | 'admin';
+  identifier: string;
+  password: string;
+}) {
+  await ensureSeeded();
+  const rawId = input.identifier.trim();
+  const cleanPhone = toEnglishDigits(rawId).replace(/[\s\-+]/g, '');
+  const cleanEmail = rawId.toLowerCase();
+
+  if (input.role === 'admin') {
+    const validAdmin =
+      cleanEmail === 'admin@hhhomesbd.com' ||
+      cleanEmail === 'info@hhhomesbd.com' ||
+      cleanPhone === '01711000001' ||
+      rawId === 'HH-ADMIN-01';
+    if (!validAdmin || input.password !== '123456') {
+      throw new Error('অ্যাডমিন আইডি অথবা পাসওয়ার্ড সঠিক নয়।');
+    }
+    return {
+      role: 'admin' as const,
+      id: 1,
+      code: 'HH-ADMIN-01',
+      nameBn: 'মোঃ তানভীর আহমেদ হাসান',
+      designationBn: 'ব্যবস্থাপনা পরিচালক ও মাস্টার অ্যাডমিন',
+      email: 'admin@hhhomesbd.com',
+      phone: '01711000001',
+    };
+  }
+
+  if (input.role === 'accounts') {
+    const staffList = await db.select().from(staffMembers);
+    const accOfficer = staffList.find(
+      (s) =>
+        s.departmentBn.includes('হিসাব') &&
+        ((s.email || '').toLowerCase() === cleanEmail ||
+          toEnglishDigits(s.phone).replace(/[\s\-+]/g, '') === cleanPhone ||
+          s.employeeCode === rawId)
+    );
+    if (accOfficer && (accOfficer.passwordHash || '123456') === input.password) {
+      return {
+        role: 'accounts' as const,
+        id: accOfficer.id,
+        code: accOfficer.employeeCode,
+        nameBn: accOfficer.nameBn,
+        designationBn: accOfficer.designationBn,
+        email: accOfficer.email,
+        phone: accOfficer.phone,
+      };
+    }
+    throw new Error('হিসাব ও অ্যাকাউন্টস কর্মকর্তার আইডি বা পাসওয়ার্ড সঠিক নয়।');
+  }
+
+  if (input.role === 'staff') {
+    const staffList = await db.select().from(staffMembers);
+    const st = staffList.find(
+      (s) =>
+        (s.email || '').toLowerCase() === cleanEmail ||
+        toEnglishDigits(s.phone).replace(/[\s\-+]/g, '') === cleanPhone ||
+        s.employeeCode === rawId
+    );
+    if (!st || (st.passwordHash || '123456') !== input.password) {
+      throw new Error('স্টাফ আইডি/মোবাইল নম্বর অথবা পাসওয়ার্ড সঠিক নয়।');
+    }
+    return {
+      role: 'staff' as const,
+      id: st.id,
+      code: st.employeeCode,
+      nameBn: st.nameBn,
+      designationBn: `${st.designationBn} · ${st.departmentBn}`,
+      email: st.email,
+      phone: st.phone,
+    };
+  }
+
+  if (input.role === 'shareholder') {
+    const holders = await db.select().from(shareholders);
+    const holder = holders.find(
+      (h) =>
+        (h.email || '').toLowerCase() === cleanEmail ||
+        toEnglishDigits(h.phone).replace(/[\s\-+]/g, '') === cleanPhone ||
+        h.shareholderCode === rawId
+    );
+    if (!holder || (holder.passwordHash || '123456') !== input.password) {
+      throw new Error('শেয়ারহোল্ডার আইডি/ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
+    }
+    return {
+      role: 'shareholder' as const,
+      id: holder.id,
+      code: holder.shareholderCode,
+      nameBn: holder.nameBn,
+      designationBn: holder.designationOrRoleBn,
+      email: holder.email,
+      phone: holder.phone,
+    };
+  }
+
+  throw new Error('অবৈধ পোর্টাল রোল।');
+}
+
+export async function getShareholderPortalData(shareholderId: number) {
+  await ensureSeeded();
+  const [holders, dists, allProjects, allTx] = await Promise.all([
+    db.select().from(shareholders).orderBy(desc(shareholders.sharePercent)),
+    db.select().from(shareDistributions).orderBy(desc(shareDistributions.id)),
+    db.select().from(projects),
+    db.select().from(erpTransactions),
+  ]);
+  const holder = holders.find((h) => h.id === shareholderId) || holders[0] || null;
+  const myDists = holder ? dists.filter((d) => d.shareholderId === holder.id) : [];
+  return {
+    shareholder: holder,
+    allShareholders: holders,
+    distributions: myDists,
+    projects: allProjects,
+    transactions: allTx,
+  };
+}
+
+export async function getStaffPortalData(staffId: number) {
+  await ensureSeeded();
+  const [staffList, slips, allProjects] = await Promise.all([
+    db.select().from(staffMembers),
+    db.select().from(salaryPayments).orderBy(desc(salaryPayments.id)),
+    db.select().from(projects),
+  ]);
+  const staff = staffList.find((s) => s.id === staffId) || staffList[0] || null;
+  const mySlips = staff ? slips.filter((s) => s.staffId === staff.id) : [];
+  return {
+    staff,
+    salarySlips: mySlips,
+    projects: allProjects,
+    colleaguesCount: staffList.length,
+  };
 }
 
 export async function createAdminMoneyReceiptRecord(input: {
@@ -1498,6 +2326,8 @@ export async function createAdminMoneyReceiptRecord(input: {
       transactionDate: today,
       type: 'income',
       categoryBn: 'কিস্তি ও বুকিং আদায় (মানি রিসিট)',
+      costCenterBn: 'বিক্রয় ও কিস্তি আদায়',
+      accountId: 2,
       projectId: 1,
       projectNameBn: bookingRow ? `বুকিং ${bookingRow.bookingNumber}` : 'সরাসরি মানি রিসিট',
       titleBn: `${input.titleBn.trim()} — রিসিট ${receiptNumber}`,
@@ -1507,6 +2337,14 @@ export async function createAdminMoneyReceiptRecord(input: {
       recordedByBn: 'হিসাব ও ক্যাশ বিভাগ',
       notesBn: 'অ্যাডমিন প্যানেল থেকে অফিশিয়াল মানি রিসিট ইস্যু করা হয়েছে।',
     });
+
+    const accRows = await db.select().from(financialAccounts).where(eq(financialAccounts.id, 2));
+    if (accRows.length > 0) {
+      await db
+        .update(financialAccounts)
+        .set({ currentBalanceBdt: accRows[0].currentBalanceBdt + Number(input.amountBdt) })
+        .where(eq(financialAccounts.id, 2));
+    }
 
     return inserted[0];
   } catch (error: any) {

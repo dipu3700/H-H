@@ -12,6 +12,10 @@ import {
   validateCustomerSignup,
   calculateErpAccountingSummary,
   formatReceiptAmountInWordsBn,
+  calculateAccountsLiquiditySummary,
+  calculateProjectCostBreakdown,
+  calculateShareDistribution,
+  calculateMonthlyPayrollSummary,
 } from './bengaliLogic.ts';
 
 test('toBengaliDigits converts English digits and formats BDT in Bengali', () => {
@@ -135,4 +139,67 @@ test('calculateErpAccountingSummary computes total income, expense, net profit, 
   assert.equal(summary.totalBookingContractBdt, 4500000);
   assert.equal(summary.totalReceivableBdt, 4000000);
 });
+
+test('calculateAccountsLiquiditySummary aggregates cash, bank, and MFS balances', () => {
+  const liquidity = calculateAccountsLiquiditySummary([
+    { accountType: 'cash', currentBalanceBdt: 450000 },
+    { accountType: 'bank', currentBalanceBdt: 5200000 },
+    { accountType: 'bank', currentBalanceBdt: 3800000 },
+    { accountType: 'mfs', currentBalanceBdt: 150000 },
+  ]);
+  assert.equal(liquidity.cashTotalBdt, 450000);
+  assert.equal(liquidity.bankTotalBdt, 9000000);
+  assert.equal(liquidity.mfsTotalBdt, 150000);
+  assert.equal(liquidity.totalLiquidityBdt, 9600000);
+});
+
+test('calculateProjectCostBreakdown splits direct construction cost and overhead per project', () => {
+  const breakdown = calculateProjectCostBreakdown(
+    [{ id: 1, nameBn: 'এইচ অ্যান্ড এইচ বসুন্ধরা গ্রিন টাউনশিপ', totalBudgetBdt: 10000000 }],
+    [
+      { type: 'income', projectId: 1, amountBdt: 4000000 },
+      { type: 'expense', projectId: 1, categoryBn: 'নির্মাণ সামগ্রী', costCenterBn: 'নির্মাণ ব্যয়', amountBdt: 1500000 },
+      { type: 'expense', projectId: 1, categoryBn: 'অফিস বেতন ও প্রশাসনিক ব্যয়', costCenterBn: 'প্রশাসনিক ব্যয়', amountBdt: 500000 },
+    ]
+  );
+  assert.equal(breakdown.length, 1);
+  assert.equal(breakdown[0].incomeBdt, 4000000);
+  assert.equal(breakdown[0].directCostBdt, 1500000);
+  assert.equal(breakdown[0].overheadCostBdt, 500000);
+  assert.equal(breakdown[0].totalExpenseBdt, 2000000);
+  assert.equal(breakdown[0].netProfitBdt, 2000000);
+  assert.equal(breakdown[0].budgetUtilizationPct, 20);
+});
+
+test('calculateShareDistribution computes shareholder dividend allocations accurately', () => {
+  const dist = calculateShareDistribution(2000000, [
+    { id: 1, nameBn: 'মাহমুদুর রহমান', totalShares: 40, sharePercent: 40, statusBn: 'সক্রিয়' },
+    { id: 2, nameBn: 'তানভীর আহমেদ', totalShares: 35, sharePercent: 35, statusBn: 'সক্রিয়' },
+    { id: 3, nameBn: 'ড. কামরুল হাসান', totalShares: 25, sharePercent: 25, statusBn: 'সক্রিয়' },
+  ]);
+  assert.equal(dist.allocatedPercent, 100);
+  assert.equal(dist.totalAllocatedDividendBdt, 2000000);
+  assert.equal(dist.unallocatedProfitBdt, 0);
+  assert.equal(dist.allocations[0].dividendAmountBdt, 800000);
+  assert.equal(dist.allocations[1].dividendAmountBdt, 700000);
+  assert.equal(dist.allocations[2].dividendAmountBdt, 500000);
+});
+
+test('calculateMonthlyPayrollSummary computes active headcount, allowances, deductions, and department totals', () => {
+  const payroll = calculateMonthlyPayrollSummary(
+    [
+      { id: 1, departmentBn: 'হিসাব ও অর্থ', basicSalaryBdt: 50000, allowanceBdt: 15000, statusBn: 'সক্রিয়' },
+      { id: 2, departmentBn: 'প্রকৌশল ও সাইট', basicSalaryBdt: 60000, allowanceBdt: 20000, statusBn: 'সক্রিয়' },
+      { id: 3, departmentBn: 'বিক্রয় ও বিপণন', basicSalaryBdt: 30000, allowanceBdt: 5000, statusBn: 'অব্যাহতিপ্রাপ্ত' },
+    ],
+    { 1: 2000 }
+  );
+  assert.equal(payroll.activeStaffCount, 2);
+  assert.equal(payroll.totalBasicSalaryBdt, 110000);
+  assert.equal(payroll.totalAllowanceBdt, 35000);
+  assert.equal(payroll.totalDeductionBdt, 2000);
+  assert.equal(payroll.totalNetPayableBdt, 143000);
+  assert.equal(payroll.byDepartment['হিসাব ও অর্থ'].netPayableBdt, 63000);
+});
+
 

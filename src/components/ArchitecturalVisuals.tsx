@@ -25,19 +25,23 @@ export function resolveImageUrl(raw?: string): string {
 
 export function HHLogo({
   variant = 'dark',
+  compact = false,
   className = '',
 }: {
   variant?: 'light' | 'dark';
+  compact?: boolean;
   className?: string;
 }) {
-  const titleColor = variant === 'light' ? 'text-white' : 'text-[#0F172A]';
+  const titleColor = variant === 'light' ? 'text-white' : 'text-[#0B162C]';
   const subColor = variant === 'light' ? 'text-emerald-300' : 'text-[#059669]';
 
   return (
-    <div className={`inline-flex items-center gap-2 sm:gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 sm:gap-3 select-none ${className}`}>
       <svg
         viewBox="0 0 88 88"
-        className="w-9 h-9 sm:w-12 sm:h-12 md:w-13 md:h-13 shrink-0 drop-shadow-sm"
+        className={`${
+          compact ? 'w-9 h-9 sm:w-10 sm:h-10' : 'w-9 h-9 sm:w-12 sm:h-12 md:w-13 md:h-13'
+        } shrink-0 drop-shadow-xs`}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-label="H & H Homes লোগো"
@@ -101,13 +105,17 @@ export function HHLogo({
       </svg>
       <div className="flex flex-col min-w-0">
         <span
-          className={`text-base sm:text-xl md:text-2xl font-extrabold tracking-tight leading-none truncate ${titleColor}`}
+          className={`${
+            compact ? 'text-base sm:text-lg md:text-xl' : 'text-base sm:text-xl md:text-2xl'
+          } font-extrabold tracking-tight leading-none truncate whitespace-nowrap ${titleColor}`}
         >
           H &amp; H Homes
         </span>
-        <span className={`text-[10px] sm:text-xs font-semibold mt-0.5 sm:mt-1 tracking-wide truncate ${subColor}`}>
-          এইচ অ্যান্ড এইচ হোমস · বনশ্রী, ঢাকা
-        </span>
+        {!compact && (
+          <span className={`text-[10px] sm:text-xs font-semibold mt-0.5 sm:mt-1 tracking-wide truncate ${subColor}`}>
+            এইচ অ্যান্ড এইচ হোমস · বনশ্রী, ঢাকা
+          </span>
+        )}
       </div>
     </div>
   );
@@ -333,11 +341,10 @@ export function ArchitecturalRender({
         onError={handleError}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/60 via-transparent to-[#0F172A]/15 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#07111E]/65 via-transparent to-[#07111E]/10 pointer-events-none" />
       {!hideBadge && (
         <div className="absolute top-3 left-3 z-10 pointer-events-none">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-[#0F172A]/80 text-white border border-white/20 backdrop-blur-md shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-[#0B162C]/85 text-[#FAF8F4] border border-white/15 backdrop-blur-md">
             {badge}
           </span>
         </div>
